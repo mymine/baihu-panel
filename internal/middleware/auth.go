@@ -2,13 +2,14 @@ package middleware
 
 import (
 	"baihu/internal/constant"
+	"baihu/internal/services"
 	"baihu/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
 // AuthRequired 认证中间件
-func AuthRequired() gin.HandlerFunc {
+func AuthRequired(settingsService *services.SettingsService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie(constant.CookieName)
 		if err != nil || token == "" {
@@ -17,8 +18,16 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
+		// 获取 JWT Secret
+		jwtSecret := settingsService.Get(constant.SectionSystem, constant.KeyJWTSecret)
+		if jwtSecret == "" {
+			utils.Unauthorized(c, "系统配置错误")
+			c.Abort()
+			return
+		}
+
 		// 验证 token
-		userID, username, err := utils.ParseToken(token)
+		userID, username, err := utils.ParseToken(token, jwtSecret)
 		if err != nil {
 			utils.Unauthorized(c, "登录已过期，请重新登录")
 			c.Abort()
@@ -32,9 +41,10 @@ func AuthRequired() gin.HandlerFunc {
 	}
 }
 
-// SetAuthCookie 设置认证 Cookie
-func SetAuthCookie(c *gin.Context, token string) {
-	c.SetCookie(constant.CookieName, token, constant.CookieMaxAge, "/", "", false, true)
+// SetAuthCookie 设置认证 Cookie，expireDays 为过期天数
+func SetAuthCookie(c *gin.Context, token string, expireDays int) {
+	maxAge := 86400 * expireDays
+	c.SetCookie(constant.CookieName, token, maxAge, "/", "", false, true)
 }
 
 // ClearAuthCookie 清除认证 Cookie

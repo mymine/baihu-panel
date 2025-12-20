@@ -10,6 +10,9 @@ import Pagination from '@/components/Pagination.vue'
 import { Plus, Pencil, Trash2, Eye, EyeOff, Search } from 'lucide-vue-next'
 import { api, type EnvVar } from '@/api'
 import { toast } from 'vue-sonner'
+import { useSiteSettings } from '@/composables/useSiteSettings'
+
+const { pageSize } = useSiteSettings()
 
 const envVars = ref<EnvVar[]>([])
 const showDialog = ref(false)
@@ -21,7 +24,6 @@ const deleteEnvId = ref<number | null>(null)
 
 const filterName = ref('')
 const currentPage = ref(1)
-const pageSize = ref(10)
 const total = ref(0)
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -155,7 +157,7 @@ onMounted(loadEnvVars)
         </div>
       </div>
       <!-- 分页 -->
-      <Pagination :total="total" :page="currentPage" :page-size="pageSize" @update:page="handlePageChange" />
+      <Pagination :total="total" :page="currentPage" @update:page="handlePageChange" />
     </div>
 
     <Dialog v-model:open="showDialog">

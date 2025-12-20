@@ -2,18 +2,20 @@
 import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { useSiteSettings } from '@/composables/useSiteSettings'
 
 const props = defineProps<{
   total: number
   page: number
-  pageSize: number
 }>()
 
 const emit = defineEmits<{
   'update:page': [page: number]
 }>()
 
-const totalPages = computed(() => Math.ceil(props.total / props.pageSize) || 1)
+const { pageSize } = useSiteSettings()
+
+const totalPages = computed(() => Math.ceil(props.total / pageSize.value) || 1)
 
 function prevPage() {
   if (props.page > 1) {

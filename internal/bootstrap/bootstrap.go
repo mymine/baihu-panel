@@ -71,8 +71,8 @@ func (a *App) initDatabase() {
 }
 
 func (a *App) initRouter() {
-	ctrls := router.RegisterControllers()
-	a.Router = router.Setup(ctrls)
+	ctrls, settingsService := router.RegisterControllers()
+	a.Router = router.Setup(ctrls, settingsService)
 }
 
 func (a *App) Run() {

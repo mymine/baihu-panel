@@ -8,13 +8,15 @@ import { RefreshCw, X, Search, Maximize2 } from 'lucide-vue-next'
 import { api, type TaskLog, type LogDetail } from '@/api'
 import { toast } from 'vue-sonner'
 import pako from 'pako'
+import { useSiteSettings } from '@/composables/useSiteSettings'
+
+const { pageSize } = useSiteSettings()
 
 const logs = ref<TaskLog[]>([])
 const selectedLog = ref<TaskLog | null>(null)
 const logDetail = ref<LogDetail | null>(null)
 const filterKeyword = ref('')
 const currentPage = ref(1)
-const pageSize = ref(10)
 const total = ref(0)
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -150,7 +152,7 @@ onMounted(loadLogs)
           </div>
         </div>
         <!-- 分页 -->
-        <Pagination :total="total" :page="currentPage" :page-size="pageSize" @update:page="handlePageChange" />
+        <Pagination :total="total" :page="currentPage" @update:page="handlePageChange" />
       </div>
 
       <!-- 日志详情侧边栏 -->

@@ -14,7 +14,6 @@
     "table_prefix": "baihu_"
   },
   "security": {
-    "jwt_secret": "ql_panel_secret_key",
     "password_salt": "ql_panel_salt"
   },
   "task": {

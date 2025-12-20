@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"strconv"
+
+	"baihu/internal/constant"
 	"baihu/internal/middleware"
 	"baihu/internal/services"
 	"baihu/internal/utils"
@@ -9,11 +12,12 @@ import (
 )
 
 type AuthController struct {
-	userService *services.UserService
+	userService     *services.UserService
+	settingsService *services.SettingsService
 }
 
-func NewAuthController(userService *services.UserService) *AuthController {
-	return &AuthController{userService: userService}
+func NewAuthController(userService *services.UserService, settingsService *services.SettingsService) *AuthController {
+	return &AuthController{userService: userService, settingsService: settingsService}
 }
 
 func (ac *AuthController) Login(c *gin.Context) {
@@ -33,15 +37,30 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 
+	// 获取 cookie 过期天数
+	expireDays := 7
+	if days := ac.settingsService.Get(constant.SectionSite, constant.KeyCookieDays); days != "" {
+		if d, err := strconv.Atoi(days); err == nil && d > 0 {
+			expireDays = d
+		}
+	}
+
+	// 获取 JWT Secret
+	jwtSecret := ac.settingsService.Get(constant.SectionSystem, constant.KeyJWTSecret)
+	if jwtSecret == "" {
+		utils.ServerError(c, "系统配置错误")
+		return
+	}
+
 	// 生成 token
-	token, err := utils.GenerateToken(user.ID, user.Username)
+	token, err := utils.GenerateToken(user.ID, user.Username, expireDays, jwtSecret)
 	if err != nil {
 		utils.ServerError(c, "登录失败")
 		return
 	}
 
 	// 设置 Cookie
-	middleware.SetAuthCookie(c, token)
+	middleware.SetAuthCookie(c, token, expireDays)
 
 	utils.Success(c, gin.H{
 		"user": user.Username,

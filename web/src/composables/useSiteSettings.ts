@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { api, type SiteSettings } from '@/api'
 
 const siteSettings = ref<SiteSettings>({
@@ -27,6 +27,8 @@ function updateFavicon(svgContent: string) {
   link.href = url
 }
 
+const pageSize = computed(() => parseInt(siteSettings.value.page_size) || 10)
+
 export function useSiteSettings() {
   async function loadSettings() {
     if (loaded) return
@@ -48,6 +50,7 @@ export function useSiteSettings() {
 
   return {
     siteSettings,
+    pageSize,
     loadSettings,
     refreshSettings,
     updateFavicon

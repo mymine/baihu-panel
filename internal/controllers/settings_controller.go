@@ -79,18 +79,18 @@ func (sc *SettingsController) CleanLogs(c *gin.Context) {
 
 // GetSiteSettings 获取站点设置
 func (sc *SettingsController) GetSiteSettings(c *gin.Context) {
-	settings := sc.settingsService.GetSection("site")
+	settings := sc.settingsService.GetSection(constant.SectionSite)
 	utils.Success(c, settings)
 }
 
 // GetPublicSiteSettings 获取公开的站点设置（无需认证）
 func (sc *SettingsController) GetPublicSiteSettings(c *gin.Context) {
-	settings := sc.settingsService.GetSection("site")
+	settings := sc.settingsService.GetSection(constant.SectionSite)
 	// 只返回公开信息
 	utils.Success(c, gin.H{
-		"title":    settings["title"],
-		"subtitle": settings["subtitle"],
-		"icon":     settings["icon"],
+		constant.KeyTitle:    settings[constant.KeyTitle],
+		constant.KeySubtitle: settings[constant.KeySubtitle],
+		constant.KeyIcon:     settings[constant.KeyIcon],
 	})
 }
 
@@ -110,14 +110,14 @@ func (sc *SettingsController) UpdateSiteSettings(c *gin.Context) {
 	}
 
 	values := map[string]string{
-		"title":       req.Title,
-		"subtitle":    req.Subtitle,
-		"icon":        req.Icon,
-		"page_size":   req.PageSize,
-		"cookie_days": req.CookieDays,
+		constant.KeyTitle:      req.Title,
+		constant.KeySubtitle:   req.Subtitle,
+		constant.KeyIcon:       req.Icon,
+		constant.KeyPageSize:   req.PageSize,
+		constant.KeyCookieDays: req.CookieDays,
 	}
 
-	if err := sc.settingsService.SetSection("site", values); err != nil {
+	if err := sc.settingsService.SetSection(constant.SectionSite, values); err != nil {
 		utils.ServerError(c, "保存失败")
 		return
 	}

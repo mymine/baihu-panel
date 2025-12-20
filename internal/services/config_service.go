@@ -58,11 +58,6 @@ func LoadConfig(path string) (*AppConfig, error) {
 		constant.TablePrefix = Config.Database.TablePrefix
 	}
 
-	// 设置 JWT 密钥
-	if Config.Security.JWTSecret != "" {
-		constant.JWTSecret = Config.Security.JWTSecret
-	}
-
 	return Config, nil
 }
 
