@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"os/exec"
 	"sync"
 	"time"
@@ -47,6 +48,7 @@ func NewExecutorService(taskService *TaskService) *ExecutorService {
 	// 注册默认回调
 	es.RegisterCallback(es.saveTaskLogCallback)
 	es.RegisterCallback(es.updateStatsCallback)
+	es.RegisterCallback(es.cleanLogsCallback)
 	return es
 }
 
@@ -109,6 +111,53 @@ func (es *ExecutorService) updateStatsCallback(taskID uint, _ string, result *Ex
 	sendStatsService := NewSendStatsService()
 	if err := sendStatsService.IncrementStats(taskID, status); err != nil {
 		logger.Errorf("Failed to update stats: %v", err)
+	}
+}
+
+// CleanConfig 清理配置结构
+type CleanConfig struct {
+	Type string `json:"type"` // "day" 或 "count"
+	Keep int    `json:"keep"` // 保留天数或条数
+}
+
+// cleanLogsCallback 清理日志的回调
+func (es *ExecutorService) cleanLogsCallback(taskID uint, _ string, _ *ExecutionResult) {
+	task := es.taskService.GetTaskByID(int(taskID))
+	if task == nil || task.CleanConfig == "" {
+		return
+	}
+
+	var config CleanConfig
+	if err := json.Unmarshal([]byte(task.CleanConfig), &config); err != nil {
+		logger.Errorf("Failed to parse clean config: %v", err)
+		return
+	}
+
+	if config.Keep <= 0 {
+		return
+	}
+
+	var deleted int64
+	switch config.Type {
+	case "day":
+		// 按天清理：删除 N 天前的日志
+		cutoff := time.Now().AddDate(0, 0, -config.Keep)
+		result := database.DB.Where("task_id = ? AND created_at < ?", taskID, cutoff).Delete(&models.TaskLog{})
+		deleted = result.RowsAffected
+	case "count":
+		// 按条数清理：使用子查询删除超出保留数量的旧日志
+		// 先获取第 N 条的 ID 作为边界
+		var boundaryLog models.TaskLog
+		err := database.DB.Where("task_id = ?", taskID).Order("id DESC").Offset(config.Keep - 1).Limit(1).First(&boundaryLog).Error
+		if err == nil {
+			// 删除 ID 小于边界的所有日志
+			result := database.DB.Where("task_id = ? AND id < ?", taskID, boundaryLog.ID).Delete(&models.TaskLog{})
+			deleted = result.RowsAffected
+		}
+	}
+
+	if deleted > 0 {
+		logger.Infof("Cleaned %d logs for task %d", deleted, taskID)
 	}
 }
 

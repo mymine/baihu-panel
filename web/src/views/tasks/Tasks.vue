@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Pagination from '@/components/Pagination.vue'
 import { Plus, Play, Pencil, Trash2, Search } from 'lucide-vue-next'
 import { api, type Task } from '@/api'
@@ -19,6 +20,10 @@ const editingTask = ref<Partial<Task>>({})
 const isEdit = ref(false)
 const showDeleteDialog = ref(false)
 const deleteTaskId = ref<number | null>(null)
+
+// 清理配置
+const cleanType = ref('')
+const cleanKeep = ref(30)
 
 const filterName = ref('')
 const currentPage = ref(1)
@@ -36,6 +41,12 @@ const cronPresets = [
   { label: '每周一', value: '0 0 0 * * 1' },
   { label: '每月1号', value: '0 0 0 1 * *' },
 ]
+
+// 计算清理配置 JSON
+const cleanConfig = computed(() => {
+  if (!cleanType.value || cleanType.value === 'none' || cleanKeep.value <= 0) return ''
+  return JSON.stringify({ type: cleanType.value, keep: cleanKeep.value })
+})
 
 async function loadTasks() {
   try {
@@ -59,19 +70,36 @@ function handlePageChange(page: number) {
 }
 
 function openCreate() {
-  editingTask.value = { name: '', command: '', schedule: '0 * * * * *', timeout: 30, enabled: true }
+  editingTask.value = { name: '', command: '', schedule: '0 * * * * *', timeout: 30, enabled: true, clean_config: '' }
+  cleanType.value = 'none'
+  cleanKeep.value = 30
   isEdit.value = false
   showDialog.value = true
 }
 
 function openEdit(task: Task) {
   editingTask.value = { ...task }
+  // 解析清理配置
+  if (task.clean_config) {
+    try {
+      const config = JSON.parse(task.clean_config)
+      cleanType.value = config.type || 'none'
+      cleanKeep.value = config.keep || 30
+    } catch {
+      cleanType.value = 'none'
+      cleanKeep.value = 30
+    }
+  } else {
+    cleanType.value = 'none'
+    cleanKeep.value = 30
+  }
   isEdit.value = true
   showDialog.value = true
 }
 
 async function saveTask() {
   try {
+    editingTask.value.clean_config = cleanConfig.value
     if (isEdit.value && editingTask.value.id) {
       await api.tasks.update(editingTask.value.id, editingTask.value)
       toast.success('任务已更新')
@@ -106,7 +134,7 @@ async function runTask(id: number) {
 
 async function toggleTask(task: Task, enabled: boolean) {
   try {
-    await api.tasks.update(task.id, { name: task.name, command: task.command, schedule: task.schedule, timeout: task.timeout, enabled })
+    await api.tasks.update(task.id, { name: task.name, command: task.command, schedule: task.schedule, timeout: task.timeout, clean_config: task.clean_config, enabled })
     toast.success(enabled ? '任务已启用' : '任务已禁用')
     loadTasks()
   } catch { toast.error('操作失败') }
@@ -182,7 +210,7 @@ onMounted(loadTasks)
     </div>
 
     <Dialog v-model:open="showDialog">
-      <DialogContent class="sm:max-w-[425px]">
+      <DialogContent class="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑任务' : '新建任务' }}</DialogTitle>
         </DialogHeader>
@@ -218,6 +246,22 @@ onMounted(loadTasks)
           <div class="grid grid-cols-4 items-center gap-4">
             <Label class="text-right">超时(分钟)</Label>
             <Input v-model.number="editingTask.timeout" type="number" placeholder="30" class="col-span-3" />
+          </div>
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label class="text-right">日志清理</Label>
+            <div class="col-span-3 flex gap-2">
+              <Select :model-value="cleanType" @update:model-value="(v) => cleanType = String(v || 'none')">
+                <SelectTrigger class="w-28">
+                  <SelectValue placeholder="不清理" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">不清理</SelectItem>
+                  <SelectItem value="day">按天数</SelectItem>
+                  <SelectItem value="count">按条数</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input v-if="cleanType && cleanType !== 'none'" v-model.number="cleanKeep" type="number" :placeholder="cleanType === 'day' ? '保留天数' : '保留条数'" class="flex-1" />
+            </div>
           </div>
         </div>
         <DialogFooter>

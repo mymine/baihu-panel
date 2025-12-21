@@ -187,6 +187,7 @@ export interface Task {
   command: string
   schedule: string
   timeout: number
+  clean_config: string
   enabled: boolean
   last_run: string
   next_run: string

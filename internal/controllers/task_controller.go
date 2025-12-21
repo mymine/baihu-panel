@@ -23,9 +23,11 @@ func NewTaskController(taskService *services.TaskService, cronService *services.
 
 func (tc *TaskController) CreateTask(c *gin.Context) {
 	var req struct {
-		Name     string `json:"name" binding:"required"`
-		Command  string `json:"command" binding:"required"`
-		Schedule string `json:"schedule" binding:"required"`
+		Name        string `json:"name" binding:"required"`
+		Command     string `json:"command" binding:"required"`
+		Schedule    string `json:"schedule" binding:"required"`
+		Timeout     int    `json:"timeout"`
+		CleanConfig string `json:"clean_config"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -38,7 +40,7 @@ func (tc *TaskController) CreateTask(c *gin.Context) {
 		return
 	}
 
-	task := tc.taskService.CreateTask(req.Name, req.Command, req.Schedule)
+	task := tc.taskService.CreateTask(req.Name, req.Command, req.Schedule, req.Timeout, req.CleanConfig)
 	tc.cronService.AddTask(task)
 
 	utils.Success(c, task)
@@ -76,10 +78,12 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 	}
 
 	var req struct {
-		Name     string `json:"name"`
-		Command  string `json:"command"`
-		Schedule string `json:"schedule"`
-		Enabled  bool   `json:"enabled"`
+		Name        string `json:"name"`
+		Command     string `json:"command"`
+		Schedule    string `json:"schedule"`
+		Timeout     int    `json:"timeout"`
+		CleanConfig string `json:"clean_config"`
+		Enabled     bool   `json:"enabled"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -94,7 +98,7 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 		}
 	}
 
-	task := tc.taskService.UpdateTask(id, req.Name, req.Command, req.Schedule, req.Enabled)
+	task := tc.taskService.UpdateTask(id, req.Name, req.Command, req.Schedule, req.Timeout, req.CleanConfig, req.Enabled)
 	if task == nil {
 		utils.NotFound(c, "任务不存在")
 		return
