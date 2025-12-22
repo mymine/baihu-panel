@@ -194,17 +194,17 @@ export const api = {
   },
   runtime: {
     getAvailable: () => request<string[]>('/runtime'),
-    listEnvs: (type: string) => request<RuntimeEnv[]>(`/runtime/${type}/envs`),
+    listEnvs: (type: string) => request<RuntimeEnv[]>(`/runtime/envs?type=${type}`),
     createEnv: (type: string, name: string, version?: string) =>
-      request(`/runtime/${type}/envs`, { method: 'POST', body: JSON.stringify({ name, version }) }),
+      request(`/runtime/envs?type=${type}`, { method: 'POST', body: JSON.stringify({ name, version }) }),
     deleteEnv: (type: string, name: string) =>
-      request(`/runtime/${type}/envs/${name}`, { method: 'DELETE' }),
+      request(`/runtime/envs?type=${type}&name=${encodeURIComponent(name)}`, { method: 'DELETE' }),
     listPackages: (type: string, envName: string) =>
-      request<RuntimePackage[]>(`/runtime/${type}/envs/${envName}/packages`),
+      request<RuntimePackage[]>(`/runtime/packages?type=${type}&env=${encodeURIComponent(envName)}`),
     installPackage: (type: string, envName: string, packageName: string) =>
-      request(`/runtime/${type}/envs/${envName}/packages`, { method: 'POST', body: JSON.stringify({ package: packageName }) }),
+      request(`/runtime/packages?type=${type}&env=${encodeURIComponent(envName)}`, { method: 'POST', body: JSON.stringify({ package: packageName }) }),
     uninstallPackage: (type: string, envName: string, packageName: string) =>
-      request(`/runtime/${type}/envs/${envName}/packages`, { method: 'DELETE', body: JSON.stringify({ package: packageName }) })
+      request(`/runtime/packages?type=${type}&env=${encodeURIComponent(envName)}`, { method: 'DELETE', body: JSON.stringify({ package: packageName }) })
   }
 }
 
