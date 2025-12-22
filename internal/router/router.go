@@ -189,12 +189,12 @@ func Setup(c *Controllers) *gin.Engine {
 			runtime := authorized.Group("/runtime")
 			{
 				runtime.GET("", c.Runtime.GetAvailableRuntimes)
-				runtime.GET("/:type/envs", c.Runtime.ListEnvs)
-				runtime.POST("/:type/envs", c.Runtime.CreateEnv)
-				runtime.DELETE("/:type/envs/:name", c.Runtime.DeleteEnv)
-				runtime.GET("/:type/envs/:name/packages", c.Runtime.ListPackages)
-				runtime.POST("/:type/envs/:name/packages", c.Runtime.InstallPackage)
-				runtime.DELETE("/:type/envs/:name/packages", c.Runtime.UninstallPackage)
+				runtime.GET("/envs", c.Runtime.ListEnvs)
+				runtime.POST("/envs", c.Runtime.CreateEnv)
+				runtime.DELETE("/envs", c.Runtime.DeleteEnv)
+				runtime.GET("/packages", c.Runtime.ListPackages)
+				runtime.POST("/packages", c.Runtime.InstallPackage)
+				runtime.DELETE("/packages", c.Runtime.UninstallPackage)
 			}
 		}
 	}

@@ -3,11 +3,19 @@ package deps_env
 import (
 	"bufio"
 	"encoding/json"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
+	"baihu/internal/constant"
 	"baihu/internal/logger"
 )
+
+// getEnvsDir 获取虚拟环境存储目录
+func getEnvsDir() string {
+	return filepath.Join(constant.DataDir, "envs")
+}
 
 // CondaManager Conda 运行时管理器
 type CondaManager struct {
@@ -54,9 +62,16 @@ func (cm *CondaManager) getCondaPath() string {
 	return cm.condaPath
 }
 
+// condaEnvDetail 环境详情
+type condaEnvDetail struct {
+	Name   string `json:"name"`
+	Active bool   `json:"active"`
+}
+
 // condaEnvJSON conda env list --json 的输出结构
 type condaEnvJSON struct {
-	Envs []string `json:"envs"`
+	Envs        []string                  `json:"envs"`
+	EnvsDetails map[string]condaEnvDetail `json:"envs_details"`
 }
 
 // ListEnvs 列出所有 Conda 环境
@@ -80,33 +95,25 @@ func (cm *CondaManager) ListEnvs() ([]RuntimeEnv, error) {
 
 	var envs []RuntimeEnv
 	for _, envPath := range envJSON.Envs {
-		name := extractEnvName(envPath)
-		// 过滤以 . 开头的环境
-		if strings.HasPrefix(name, ".") {
-			continue
+		detail, ok := envJSON.EnvsDetails[envPath]
+		name := ""
+		active := false
+		if ok {
+			name = detail.Name
+			active = detail.Active
+		}
+		// 如果没有 name，使用路径
+		if name == "" {
+			name = envPath
 		}
 		envs = append(envs, RuntimeEnv{
 			Name:   name,
 			Path:   envPath,
-			Active: false,
+			Active: active,
 		})
 	}
 
 	return envs, nil
-}
-
-// extractEnvName 从路径中提取环境名称
-func extractEnvName(envPath string) string {
-	parts := strings.Split(envPath, "/")
-	if len(parts) > 0 {
-		name := parts[len(parts)-1]
-		// 如果是 base 环境，路径可能是 /opt/conda 这样的
-		if name == "conda" || name == "miniconda3" || name == "anaconda3" {
-			return "base"
-		}
-		return name
-	}
-	return envPath
 }
 
 // CreateEnv 创建 Conda 环境
@@ -116,19 +123,63 @@ func (cm *CondaManager) CreateEnv(name string, version string) error {
 		return exec.ErrNotFound
 	}
 
-	args := []string{"create", "-n", name, "-y"}
+	envsDir := getEnvsDir()
+	// 确保目录存在
+	if err := os.MkdirAll(envsDir, 0755); err != nil {
+		return err
+	}
+
+	envPath := filepath.Join(envsDir, name)
+	args := []string{"create", "-p", envPath, "-y"}
 	if version != "" {
 		args = append(args, "python="+version)
 	}
 
+	logger.Infof("Creating conda env: %s %v", condaPath, args)
 	cmd := exec.Command(condaPath, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Errorf("Failed to create conda env: %v, output: %s", err, string(output))
 		return err
 	}
+	logger.Infof("Conda env created: %s", envPath)
+
+	// 写入 environments.txt
+	if err := cm.appendToEnvironmentsTxt(envPath); err != nil {
+		logger.Errorf("Failed to write environments.txt: %v", err)
+	}
 
 	return nil
+}
+
+// appendToEnvironmentsTxt 将环境路径追加到 environments.txt
+func (cm *CondaManager) appendToEnvironmentsTxt(envPath string) error {
+	absPath, err := filepath.Abs(envPath)
+	if err != nil {
+		return err
+	}
+
+	envsDir := getEnvsDir()
+	envsTxtPath := filepath.Join(envsDir, "environments.txt")
+
+	// 读取现有内容，检查是否已存在
+	content, _ := os.ReadFile(envsTxtPath)
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		if strings.TrimSpace(line) == absPath {
+			return nil // 已存在
+		}
+	}
+
+	// 追加写入
+	f, err := os.OpenFile(envsTxtPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(absPath + "\n")
+	return err
 }
 
 // DeleteEnv 删除 Conda 环境

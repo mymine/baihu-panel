@@ -58,6 +58,9 @@ RUN sed -i 's@deb.debian.org@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.li
     && "${CONDA_DIR}"/bin/conda config --set show_channel_urls yes \
     && "${CONDA_DIR}"/bin/conda config --set channel_priority strict \
     && "${CONDA_DIR}"/bin/conda init \
+    && "${CONDA_DIR}"/bin/conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main \
+    && "${CONDA_DIR}"/bin/conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free \
+    && "${CONDA_DIR}"/bin/conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge  \
     && "${CONDA_DIR}"/bin/python -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple \
     && "${CONDA_DIR}"/bin/conda clean -afy
 

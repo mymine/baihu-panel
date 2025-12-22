@@ -25,7 +25,12 @@ func (rc *RuntimeController) GetAvailableRuntimes(c *gin.Context) {
 
 // ListEnvs 列出指定运行时的所有环境
 func (rc *RuntimeController) ListEnvs(c *gin.Context) {
-	runtimeType := c.Param("type")
+	runtimeType := c.Query("type")
+	if runtimeType == "" {
+		utils.BadRequest(c, "缺少 type 参数")
+		return
+	}
+
 	manager := rc.runtimeService.GetManager(runtimeType)
 	if manager == nil {
 		utils.NotFound(c, "运行时类型不存在")
@@ -48,7 +53,12 @@ func (rc *RuntimeController) ListEnvs(c *gin.Context) {
 
 // CreateEnv 创建环境
 func (rc *RuntimeController) CreateEnv(c *gin.Context) {
-	runtimeType := c.Param("type")
+	runtimeType := c.Query("type")
+	if runtimeType == "" {
+		utils.BadRequest(c, "缺少 type 参数")
+		return
+	}
+
 	manager := rc.runtimeService.GetManager(runtimeType)
 	if manager == nil {
 		utils.NotFound(c, "运行时类型不存在")
@@ -75,8 +85,13 @@ func (rc *RuntimeController) CreateEnv(c *gin.Context) {
 
 // DeleteEnv 删除环境
 func (rc *RuntimeController) DeleteEnv(c *gin.Context) {
-	runtimeType := c.Param("type")
-	envName := c.Param("name")
+	runtimeType := c.Query("type")
+	envName := c.Query("name")
+
+	if runtimeType == "" || envName == "" {
+		utils.BadRequest(c, "缺少 type 或 name 参数")
+		return
+	}
 
 	manager := rc.runtimeService.GetManager(runtimeType)
 	if manager == nil {
@@ -99,8 +114,13 @@ func (rc *RuntimeController) DeleteEnv(c *gin.Context) {
 
 // ListPackages 列出环境中的包
 func (rc *RuntimeController) ListPackages(c *gin.Context) {
-	runtimeType := c.Param("type")
-	envName := c.Param("name")
+	runtimeType := c.Query("type")
+	envName := c.Query("env")
+
+	if runtimeType == "" || envName == "" {
+		utils.BadRequest(c, "缺少 type 或 env 参数")
+		return
+	}
 
 	manager := rc.runtimeService.GetManager(runtimeType)
 	if manager == nil {
@@ -119,8 +139,13 @@ func (rc *RuntimeController) ListPackages(c *gin.Context) {
 
 // InstallPackage 安装包
 func (rc *RuntimeController) InstallPackage(c *gin.Context) {
-	runtimeType := c.Param("type")
-	envName := c.Param("name")
+	runtimeType := c.Query("type")
+	envName := c.Query("env")
+
+	if runtimeType == "" || envName == "" {
+		utils.BadRequest(c, "缺少 type 或 env 参数")
+		return
+	}
 
 	manager := rc.runtimeService.GetManager(runtimeType)
 	if manager == nil {
@@ -147,8 +172,13 @@ func (rc *RuntimeController) InstallPackage(c *gin.Context) {
 
 // UninstallPackage 卸载包
 func (rc *RuntimeController) UninstallPackage(c *gin.Context) {
-	runtimeType := c.Param("type")
-	envName := c.Param("name")
+	runtimeType := c.Query("type")
+	envName := c.Query("env")
+
+	if runtimeType == "" || envName == "" {
+		utils.BadRequest(c, "缺少 type 或 env 参数")
+		return
+	}
 
 	manager := rc.runtimeService.GetManager(runtimeType)
 	if manager == nil {
