@@ -200,7 +200,7 @@ export const api = {
     create: (data: { name: string; version?: string; type: string; remark?: string }) =>
       request<Dependency>('/deps', { method: 'POST', body: JSON.stringify(data) }),
     delete: (id: number) => request(`/deps/${id}`, { method: 'DELETE' }),
-    install: (data: { name: string; version?: string; type: string }) =>
+    install: (data: { name: string; version?: string; type: string; remark?: string }) =>
       request('/deps/install', { method: 'POST', body: JSON.stringify(data) }),
     uninstall: (id: number) => request(`/deps/uninstall/${id}`, { method: 'POST' }),
     getInstalled: (type: string) => request<Dependency[]>(`/deps/installed?type=${type}`)

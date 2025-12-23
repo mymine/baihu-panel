@@ -87,6 +87,7 @@ func (c *DependencyController) Install(ctx *gin.Context) {
 		Name    string `json:"name" binding:"required"`
 		Version string `json:"version"`
 		Type    string `json:"type" binding:"required"`
+		Remark  string `json:"remark"`
 	}
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -98,6 +99,7 @@ func (c *DependencyController) Install(ctx *gin.Context) {
 		Name:    req.Name,
 		Version: req.Version,
 		Type:    req.Type,
+		Remark:  req.Remark,
 	}
 
 	if err := c.service.Install(dep); err != nil {

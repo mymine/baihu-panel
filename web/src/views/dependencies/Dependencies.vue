@@ -20,6 +20,7 @@ const installing = ref(false)
 const showInstallDialog = ref(false)
 const newPkgName = ref('')
 const newPkgVersion = ref('')
+const newPkgRemark = ref('')
 
 // 删除确认
 const showDeleteDialog = ref(false)
@@ -54,6 +55,7 @@ async function loadDeps() {
 function openInstallDialog() {
   newPkgName.value = ''
   newPkgVersion.value = ''
+  newPkgRemark.value = ''
   showInstallDialog.value = true
 }
 
@@ -67,7 +69,8 @@ async function installPackage() {
     await api.deps.install({
       name: newPkgName.value.trim(),
       version: newPkgVersion.value.trim() || undefined,
-      type: activeTab.value
+      type: activeTab.value,
+      remark: newPkgRemark.value.trim() || undefined
     })
     toast.success('安装成功')
     showInstallDialog.value = false
@@ -202,6 +205,10 @@ onMounted(loadDeps)
           <div class="grid grid-cols-4 items-center gap-4">
             <Label class="text-right">版本</Label>
             <Input v-model="newPkgVersion" placeholder="可选，如 1.0.0" class="col-span-3" />
+          </div>
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label class="text-right">备注</Label>
+            <Input v-model="newPkgRemark" placeholder="可选" class="col-span-3" />
           </div>
         </div>
         <DialogFooter>
