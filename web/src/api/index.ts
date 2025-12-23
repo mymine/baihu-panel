@@ -220,6 +220,7 @@ export interface Task {
   command: string
   schedule: string
   timeout: number
+  work_dir: string
   clean_config: string
   envs: string
   enabled: boolean

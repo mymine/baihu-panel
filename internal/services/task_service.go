@@ -11,12 +11,13 @@ func NewTaskService() *TaskService {
 	return &TaskService{}
 }
 
-func (ts *TaskService) CreateTask(name, command, schedule string, timeout int, cleanConfig, envs string) *models.Task {
+func (ts *TaskService) CreateTask(name, command, schedule string, timeout int, workDir, cleanConfig, envs string) *models.Task {
 	task := &models.Task{
 		Name:        name,
 		Command:     command,
 		Schedule:    schedule,
 		Timeout:     timeout,
+		WorkDir:     workDir,
 		CleanConfig: cleanConfig,
 		Envs:        envs,
 		Enabled:     true,
@@ -55,7 +56,7 @@ func (ts *TaskService) GetTaskByID(id int) *models.Task {
 	return &task
 }
 
-func (ts *TaskService) UpdateTask(id int, name, command, schedule string, timeout int, cleanConfig, envs string, enabled bool) *models.Task {
+func (ts *TaskService) UpdateTask(id int, name, command, schedule string, timeout int, workDir, cleanConfig, envs string, enabled bool) *models.Task {
 	var task models.Task
 	if err := database.DB.First(&task, id).Error; err != nil {
 		return nil
@@ -64,6 +65,7 @@ func (ts *TaskService) UpdateTask(id int, name, command, schedule string, timeou
 	task.Command = command
 	task.Schedule = schedule
 	task.Timeout = timeout
+	task.WorkDir = workDir
 	task.CleanConfig = cleanConfig
 	task.Envs = envs
 	task.Enabled = enabled

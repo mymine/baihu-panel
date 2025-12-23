@@ -300,12 +300,18 @@ func (es *ExecutorService) executeTaskInternal(taskID int) *ExecutionResult {
 	envService := NewEnvService()
 	envVars := envService.GetEnvVarsByIDs(task.Envs)
 
+	// 确定工作目录
+	workDir := task.WorkDir
+	if workDir == "" {
+		workDir = constant.ScriptsWorkDir
+	}
+
 	// 使用任务配置的超时时间
 	timeout := task.Timeout
 	if timeout <= 0 {
 		timeout = constant.DefaultTaskTimeout
 	}
-	result := es.ExecuteCommandWithEnv(task.Command, time.Duration(timeout)*time.Minute, envVars)
+	result := es.ExecuteCommandWithOptions(task.Command, time.Duration(timeout)*time.Minute, envVars, workDir)
 	result.TaskID = taskID
 
 	// 标记任务结束
@@ -338,6 +344,11 @@ func (es *ExecutorService) ExecuteCommandWithTimeout(command string, timeout tim
 
 // ExecuteCommandWithEnv executes a shell command with specified timeout and environment variables
 func (es *ExecutorService) ExecuteCommandWithEnv(command string, timeout time.Duration, envVars []string) *ExecutionResult {
+	return es.ExecuteCommandWithOptions(command, timeout, envVars, "")
+}
+
+// ExecuteCommandWithOptions executes a shell command with specified timeout, environment variables and working directory
+func (es *ExecutorService) ExecuteCommandWithOptions(command string, timeout time.Duration, envVars []string, workDir string) *ExecutionResult {
 	result := &ExecutionResult{
 		Success: false,
 		Start:   time.Now(),
@@ -351,6 +362,11 @@ func (es *ExecutorService) ExecuteCommandWithEnv(command string, timeout time.Du
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+
+	// 设置工作目录
+	if workDir != "" {
+		cmd.Dir = workDir
+	}
 
 	// 设置环境变量：继承系统环境变量 + 自定义环境变量
 	if len(envVars) > 0 {

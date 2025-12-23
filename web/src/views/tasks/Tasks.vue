@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
 import Pagination from '@/components/Pagination.vue'
+import DirTreeSelect from '@/components/DirTreeSelect.vue'
 import { Plus, Play, Pencil, Trash2, Search, ScrollText, ChevronDown, X } from 'lucide-vue-next'
 import { api, type Task, type EnvVar } from '@/api'
 import { toast } from 'vue-sonner'
@@ -118,7 +119,7 @@ function handlePageChange(page: number) {
 }
 
 function openCreate() {
-  editingTask.value = { name: '', command: '', schedule: '0 * * * * *', timeout: 30, enabled: true, clean_config: '', envs: '' }
+  editingTask.value = { name: '', command: '', schedule: '0 * * * * *', timeout: 30, work_dir: '', enabled: true, clean_config: '', envs: '' }
   cleanType.value = 'none'
   cleanKeep.value = 30
   selectedEnvIds.value = []
@@ -192,7 +193,7 @@ async function runTask(id: number) {
 
 async function toggleTask(task: Task, enabled: boolean) {
   try {
-    await api.tasks.update(task.id, { name: task.name, command: task.command, schedule: task.schedule, timeout: task.timeout, clean_config: task.clean_config, envs: task.envs, enabled })
+    await api.tasks.update(task.id, { name: task.name, command: task.command, schedule: task.schedule, timeout: task.timeout, work_dir: task.work_dir, clean_config: task.clean_config, envs: task.envs, enabled })
     toast.success(enabled ? '任务已启用' : '任务已禁用')
     loadTasks()
   } catch { toast.error('操作失败') }
@@ -290,6 +291,12 @@ onMounted(() => {
           <div class="grid grid-cols-4 items-center gap-4">
             <Label class="text-right">执行命令</Label>
             <Input v-model="editingTask.command" placeholder="node script.js" class="col-span-3 font-mono" />
+          </div>
+          <div class="grid grid-cols-4 items-center gap-4">
+            <Label class="text-right">工作目录</Label>
+            <div class="col-span-3">
+              <DirTreeSelect v-model="editingTask.work_dir" />
+            </div>
           </div>
           <div class="grid grid-cols-4 items-center gap-4">
             <Label class="text-right">定时规则</Label>

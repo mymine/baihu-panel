@@ -27,6 +27,7 @@ func (tc *TaskController) CreateTask(c *gin.Context) {
 		Command     string `json:"command" binding:"required"`
 		Schedule    string `json:"schedule" binding:"required"`
 		Timeout     int    `json:"timeout"`
+		WorkDir     string `json:"work_dir"`
 		CleanConfig string `json:"clean_config"`
 		Envs        string `json:"envs"`
 	}
@@ -41,7 +42,7 @@ func (tc *TaskController) CreateTask(c *gin.Context) {
 		return
 	}
 
-	task := tc.taskService.CreateTask(req.Name, req.Command, req.Schedule, req.Timeout, req.CleanConfig, req.Envs)
+	task := tc.taskService.CreateTask(req.Name, req.Command, req.Schedule, req.Timeout, req.WorkDir, req.CleanConfig, req.Envs)
 	tc.cronService.AddTask(task)
 
 	utils.Success(c, task)
@@ -83,6 +84,7 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 		Command     string `json:"command"`
 		Schedule    string `json:"schedule"`
 		Timeout     int    `json:"timeout"`
+		WorkDir     string `json:"work_dir"`
 		CleanConfig string `json:"clean_config"`
 		Envs        string `json:"envs"`
 		Enabled     bool   `json:"enabled"`
@@ -100,7 +102,7 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 		}
 	}
 
-	task := tc.taskService.UpdateTask(id, req.Name, req.Command, req.Schedule, req.Timeout, req.CleanConfig, req.Envs, req.Enabled)
+	task := tc.taskService.UpdateTask(id, req.Name, req.Command, req.Schedule, req.Timeout, req.WorkDir, req.CleanConfig, req.Envs, req.Enabled)
 	if task == nil {
 		utils.NotFound(c, "任务不存在")
 		return
