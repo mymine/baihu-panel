@@ -1,46 +1,62 @@
 #!/bin/sh
+set -e
 
 PYTHON_VENV_DIR="/app/envs/python"
 NODE_ENV_DIR="/app/envs/node"
 
 # ============================
-# 创建必要目录
+# 创建基础目录
 # ============================
 mkdir -p /app/data /app/data/scripts /app/configs /app/envs
 
 # ============================
-# 创建 Python 虚拟环境（如果不存在）
+# Python 虚拟环境
 # ============================
-if [ ! -d "$PYTHON_VENV_DIR" ]; then
-    echo "Creating Python virtual environment..."
+if [ ! -x "$PYTHON_VENV_DIR/bin/python" ]; then
+    echo "[entrypoint] Creating Python venv..."
     python3 -m venv "$PYTHON_VENV_DIR"
+    "$PYTHON_VENV_DIR/bin/pip" install --upgrade pip setuptools wheel
     "$PYTHON_VENV_DIR/bin/pip" config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-    "$PYTHON_VENV_DIR/bin/pip" install --upgrade pip
-    echo "Python virtual environment created at $PYTHON_VENV_DIR"
 else
-    echo "Python virtual environment already exists at $PYTHON_VENV_DIR"
+    echo "[entrypoint] Python venv exists"
 fi
 
 # ============================
-# 创建 Node 环境目录（如果不存在）
+# Node 本地环境（npm prefix 方案）
 # ============================
-if [ ! -d "$NODE_ENV_DIR" ]; then
-    echo "Creating Node environment directory..."
+if [ ! -d "$NODE_ENV_DIR/node_modules" ]; then
+    echo "[entrypoint] Initializing Node environment..."
     mkdir -p "$NODE_ENV_DIR"
-    # 设置 npm 全局安装目录
-    npm config set prefix "$NODE_ENV_DIR"
-    # 配置淘宝镜像
-    npm config set registry https://registry.npmmirror.com
-    echo "Node environment created at $NODE_ENV_DIR"
+    cd "$NODE_ENV_DIR"
+    npm init -y >/dev/null 2>&1
 else
-    echo "Node environment already exists at $NODE_ENV_DIR"
+    echo "[entrypoint] Node environment exists"
 fi
 
 # ============================
-# 设置环境变量
+# npm / Node 内存与行为控制（关键）
 # ============================
-export PATH="$NODE_ENV_DIR/bin:$PYTHON_VENV_DIR/bin:$PATH"
-export NODE_PATH="$NODE_ENV_DIR/lib/node_modules"
+export NODE_OPTIONS="--max-old-space-size=256"
+
+npm config set registry https://registry.npmmirror.com
+npm config set audit false
+npm config set fund false
+npm config set progress false
+npm config set maxsockets 2
+
+# ============================
+# 环境变量注入（等价于 activate）
+# ============================
+export PATH="$PYTHON_VENV_DIR/bin:$NODE_ENV_DIR/node_modules/.bin:$PATH"
+export NODE_PATH="$NODE_ENV_DIR/node_modules"
+
+# ============================
+# 打印确认（非常建议保留）
+# ============================
+echo "[entrypoint] python: $(which python)"
+echo "[entrypoint] pip: $(which pip)"
+echo "[entrypoint] node: $(which node)"
+echo "[entrypoint] npm root: $(npm root --prefix $NODE_ENV_DIR)"
 
 # ============================
 # 启动应用
