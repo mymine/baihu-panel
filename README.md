@@ -52,6 +52,14 @@ services:
       - ./envs:/app/envs
     environment:
       - TZ=Asia/Shanghai
+      # 以下环境变量可覆盖配置文件（可选）
+      # - BH_SERVER_PORT=8052
+      # - BH_DB_TYPE=mysql
+      # - BH_DB_HOST=localhost
+      # - BH_DB_PORT=3306
+      # - BH_DB_USER=root
+      # - BH_DB_PASSWORD=password
+      # - BH_DB_NAME=baihu
     restart: unless-stopped
 ```
 
@@ -135,6 +143,8 @@ docker-compose up -d
 
 ## 配置说明 ⚙️
 
+### 配置文件
+
 配置文件路径：`configs/config.ini`
 
 ```ini
@@ -152,12 +162,42 @@ dbname = ql_panel
 table_prefix = baihu_
 ```
 
-| 配置项 | 说明 | 默认值 |
-|--------|------|--------|
-| `server.port` | 服务端口 | 8052 |
-| `server.host` | 监听地址 | 0.0.0.0 |
-| `database.type` | 数据库类型 | sqlite |
-| `database.table_prefix` | 表前缀 | baihu_ |
+### 环境变量
+
+所有配置项都支持通过环境变量覆盖，环境变量优先级高于配置文件：
+
+| 环境变量 | 对应配置 | 说明 | 默认值 |
+|----------|----------|------|--------|
+| `BH_SERVER_PORT` | server.port | 服务端口 | 8052 |
+| `BH_SERVER_HOST` | server.host | 监听地址 | 0.0.0.0 |
+| `BH_DB_TYPE` | database.type | 数据库类型 (sqlite/mysql) | sqlite |
+| `BH_DB_HOST` | database.host | 数据库地址 | localhost |
+| `BH_DB_PORT` | database.port | 数据库端口 | 3306 |
+| `BH_DB_USER` | database.user | 数据库用户 | root |
+| `BH_DB_PASSWORD` | database.password | 数据库密码 | - |
+| `BH_DB_NAME` | database.dbname | 数据库名称 | ql_panel |
+| `BH_DB_PATH` | database.path | SQLite 文件路径 | ./data/ql.db |
+| `BH_DB_TABLE_PREFIX` | database.table_prefix | 表前缀 | baihu_ |
+| `BH_SECRET` | security.secret | JWT 密钥 | 自动生成 |
+
+**使用 MySQL 示例：**
+
+```bash
+docker run -d \
+  --name baihu \
+  -p 8052:8052 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/envs:/app/envs \
+  -e TZ=Asia/Shanghai \
+  -e BH_DB_TYPE=mysql \
+  -e BH_DB_HOST=mysql-server \
+  -e BH_DB_PORT=3306 \
+  -e BH_DB_USER=root \
+  -e BH_DB_PASSWORD=your_password \
+  -e BH_DB_NAME=baihu \
+  --restart unless-stopped \
+  ghcr.io/engigu/baihu:main
+```
 
 ### 调度设置
 
