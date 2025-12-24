@@ -54,7 +54,7 @@ jobs:
 
       - name: Get build time
         id: build_time
-        run: echo "time=$(date '+%Y/%m/%d %H:%M:%S')" >> $GITHUB_OUTPUT
+        run: echo "time=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
 
       - name: Build and push by digest
         id: build
