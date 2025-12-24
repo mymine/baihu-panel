@@ -1,10 +1,9 @@
-# 白虎面板 🐯
 
 轻量级定时任务管理系统，基于 Go + Vue 3 构建。
 
-> ⚠️ 出于安全考虑，目前仅支持 Docker 部署方式。
+> ⚠️ 出于安全考虑，目前仅支持 Docker 部署方式。[镜像地址](https://github.com/engigu/BaiHu/pkgs/container/baihu)
 
-## 🐳 快速部署
+## 快速部署
 
 ```bash
 docker run -d \
@@ -22,17 +21,4 @@ docker run -d \
 
 默认账号：`admin` / `123456`
 
-## ✨ 功能特性
 
-- � **关定时任务** - Cron 表达式调度，手动触发执行
-- 📝 **脚本管理** - 在线代码编辑器，支持文件上传
-- 🖥️ **在线终端** - WebSocket 实时终端
-- 📊 **执行日志** - 任务执行历史，日志压缩存储
-- 🔐 **环境变量** - 安全存储，任务执行时自动注入
-- ⚙️ **系统设置** - 站点自定义，调度参数热重载
-- 🎨 **现代 UI** - 响应式设计，深色/浅色主题
-
-## 🔗 相关链接
-
-- [项目主页](https://github.com/engigu/baihu)
-- [使用文档](https://github.com/engigu/baihu#readme)
