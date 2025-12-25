@@ -103,6 +103,12 @@ func LoadConfig(path string) (*AppConfig, error) {
 	// 设置 Secret 到 constant 包
 	constant.Secret = Config.Security.Secret
 
+	// 设置演示模式
+	if v := os.Getenv("BH_DEMO_MODE"); v == "true" || v == "1" {
+		constant.DemoMode = true
+		log.Printf("[Config] Demo mode enabled")
+	}
+
 	// 输出配置信息（隐藏敏感信息）
 	log.Printf("[Config] Server: %s:%d", Config.Server.Host, Config.Server.Port)
 	log.Printf("[Config] Database: type=%s, host=%s, port=%d, dbname=%s",

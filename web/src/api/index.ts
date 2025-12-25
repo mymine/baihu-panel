@@ -111,7 +111,7 @@ export const api = {
     changePassword: (data: { old_password: string; new_password: string }) =>
       request('/settings/password', { method: 'POST', body: JSON.stringify(data) }),
     getSite: () => request<SiteSettings>('/settings/site'),
-    getPublicSite: () => request<{ title: string; subtitle: string; icon: string }>('/settings/public'),
+    getPublicSite: () => request<{ title: string; subtitle: string; icon: string; demo_mode: boolean }>('/settings/public'),
     updateSite: (data: SiteSettings) =>
       request('/settings/site', { method: 'PUT', body: JSON.stringify(data) }),
     getScheduler: () => request<SchedulerSettings>('/settings/scheduler'),

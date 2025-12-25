@@ -17,6 +17,7 @@ const loading = ref(false)
 const siteTitle = ref('白虎面板')
 const siteSubtitle = ref('轻量级定时任务管理系统')
 const siteIcon = ref('')
+const demoMode = ref(false)
 
 async function loadSiteSettings() {
   try {
@@ -24,7 +25,13 @@ async function loadSiteSettings() {
     siteTitle.value = res.title || '白虎面板'
     siteSubtitle.value = res.subtitle || '轻量级定时任务管理系统'
     siteIcon.value = res.icon || ''
+    demoMode.value = res.demo_mode || false
     document.title = siteTitle.value
+    // 演示模式下自动填充账号密码
+    if (demoMode.value) {
+      username.value = 'admin'
+      password.value = '123456'
+    }
     // 设置 favicon
     if (siteIcon.value && siteIcon.value.trim().startsWith('<svg')) {
       const blob = new Blob([siteIcon.value], { type: 'image/svg+xml' })

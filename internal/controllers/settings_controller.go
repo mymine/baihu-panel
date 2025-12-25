@@ -37,6 +37,12 @@ func NewSettingsController(userService *services.UserService, loginLogService *s
 
 // ChangePassword 修改密码
 func (sc *SettingsController) ChangePassword(c *gin.Context) {
+	// 演示模式下禁止修改密码
+	if constant.DemoMode {
+		utils.BadRequest(c, "演示模式下不能修改密码")
+		return
+	}
+
 	var req struct {
 		OldPassword string `json:"old_password" binding:"required"`
 		NewPassword string `json:"new_password" binding:"required,min=6"`
@@ -83,6 +89,7 @@ func (sc *SettingsController) GetPublicSiteSettings(c *gin.Context) {
 		constant.KeyTitle:    settings[constant.KeyTitle],
 		constant.KeySubtitle: settings[constant.KeySubtitle],
 		constant.KeyIcon:     settings[constant.KeyIcon],
+		"demo_mode":          constant.DemoMode,
 	})
 }
 

@@ -322,6 +322,11 @@ func (es *ExecutorService) executeTaskInternal(taskID int) *ExecutionResult {
 
 // executeNormalTask 执行普通任务
 func (es *ExecutorService) executeNormalTask(task *models.Task) *ExecutionResult {
+	// 演示模式下使用 echo 替换实际命令
+	if constant.DemoMode {
+		return es.ExecuteCommandWithOptions("echo '[演示模式] 任务执行已跳过，实际命令不会运行'", time.Minute, nil, "")
+	}
+
 	// 加载环境变量
 	envService := NewEnvService()
 	envVars := envService.GetEnvVarsByIDs(task.Envs)
@@ -342,6 +347,11 @@ func (es *ExecutorService) executeNormalTask(task *models.Task) *ExecutionResult
 
 // executeRepoTask 执行仓库同步任务（调用 sync.py）
 func (es *ExecutorService) executeRepoTask(task *models.Task) *ExecutionResult {
+	// 演示模式下使用 echo 替换实际命令
+	if constant.DemoMode {
+		return es.ExecuteCommandWithOptions("echo '[演示模式] 仓库同步已跳过，实际命令不会运行'", time.Minute, nil, "")
+	}
+
 	result := &ExecutionResult{
 		Success: false,
 		Start:   time.Now(),

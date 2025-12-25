@@ -72,6 +72,12 @@ func (tc *TerminalController) HandleWebSocket(c *gin.Context) {
 	}
 	defer conn.Close()
 
+	// 演示模式下禁用终端
+	if constant.DemoMode {
+		conn.WriteMessage(websocket.TextMessage, []byte("\r\n\033[1;33m[演示模式] 终端功能已禁用\033[0m\r\n"))
+		return
+	}
+
 	// Windows 使用 pipe 模式，Unix 使用 PTY 模式
 	if runtime.GOOS == "windows" {
 		tc.handlePipeMode(conn)
