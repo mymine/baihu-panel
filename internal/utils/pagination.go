@@ -9,6 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ParseInt 解析字符串为整数
+func ParseInt(s string) (int, error) {
+	return strconv.Atoi(s)
+}
+
 // Pagination 分页参数
 type Pagination struct {
 	Page     int

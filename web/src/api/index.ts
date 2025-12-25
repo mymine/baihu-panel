@@ -104,8 +104,8 @@ export const api = {
   dashboard: {
     stats: () => request<Stats>('/stats'),
     sentence: () => request<{ sentence: string }>('/sentence'),
-    sendStats: () => request<DailyStats[]>('/sendstats'),
-    taskStats: () => request<TaskStatsItem[]>('/taskstats')
+    sendStats: (days?: number) => request<DailyStats[]>(`/sendstats${days ? `?days=${days}` : ''}`),
+    taskStats: (days?: number) => request<TaskStatsItem[]>(`/taskstats${days ? `?days=${days}` : ''}`)
   },
   settings: {
     changePassword: (data: { old_password: string; new_password: string }) =>

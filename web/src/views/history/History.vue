@@ -143,14 +143,22 @@ watch(() => route.query.task_id, (newTaskId) => {
     <div class="flex flex-col lg:flex-row gap-4">
       <!-- 日志列表 -->
       <div class="flex-1 min-w-0 rounded-lg border bg-card overflow-hidden">
-        <!-- 表头 -->
-        <div class="flex items-center gap-4 px-4 py-2 border-b bg-muted/50 text-sm text-muted-foreground font-medium overflow-x-auto">
-          <span class="w-12 shrink-0">ID</span>
-          <span class="w-8 shrink-0 text-center">类型</span>
-          <span class="w-20 sm:w-28 shrink-0">任务名称</span>
-          <span :class="selectedLog ? 'w-40 shrink-0 hidden sm:block' : 'w-32 sm:flex-1 shrink-0 sm:shrink'">命令</span>
+        <!-- 小屏表头 -->
+        <div class="flex sm:hidden items-center gap-2 px-3 py-2 border-b bg-muted/50 text-xs text-muted-foreground font-medium">
+          <span class="w-14 shrink-0">ID</span>
+          <span class="w-6 shrink-0 text-center">类型</span>
+          <span class="flex-1 min-w-0">任务名称</span>
+          <span class="w-8 shrink-0 text-center">状态</span>
+          <span class="w-12 text-right shrink-0">耗时</span>
+        </div>
+        <!-- 大屏表头 -->
+        <div class="hidden sm:flex items-center gap-4 px-4 py-2 border-b bg-muted/50 text-sm text-muted-foreground font-medium">
+          <span class="w-16 shrink-0">ID</span>
+          <span class="w-10 shrink-0 text-center">类型</span>
+          <span class="w-36 shrink-0">任务名称</span>
+          <span class="flex-1 min-w-0">命令</span>
           <span class="w-12 shrink-0 text-center">状态</span>
-          <span class="w-20 text-right shrink-0">耗时</span>
+          <span class="w-16 text-right shrink-0">耗时</span>
           <span v-if="!selectedLog" class="w-40 text-right shrink-0 hidden md:block">执行时间</span>
         </div>
         <!-- 列表 -->
@@ -162,27 +170,41 @@ watch(() => route.query.task_id, (newTaskId) => {
             v-for="log in logs"
             :key="log.id"
             :class="[
-              'flex items-center gap-4 px-4 py-2 min-h-[44px] cursor-pointer hover:bg-muted/50 transition-colors',
+              'cursor-pointer hover:bg-muted/50 transition-colors',
               selectedLog?.id === log.id && 'bg-accent'
             ]"
             @click="selectLog(log)"
           >
-            <span class="w-12 shrink-0 text-muted-foreground text-sm">#{{ log.id }}</span>
-            <span class="w-8 shrink-0 flex justify-center" :title="getTaskTypeTitle(log.task_type || 'task')">
-              <GitBranch v-if="log.task_type === 'repo'" class="h-4 w-4 text-primary" />
-              <Terminal v-else class="h-4 w-4 text-muted-foreground" />
-            </span>
-            <span class="w-20 sm:w-28 font-medium truncate shrink-0 text-sm">
-              <TextOverflow :text="log.task_name" title="任务名称" />
-            </span>
-            <code :class="['text-muted-foreground truncate text-xs bg-muted px-2 py-1 rounded', selectedLog ? 'w-40 shrink-0 hidden sm:block' : 'w-32 sm:flex-1 shrink-0 sm:shrink']">
-              <TextOverflow :text="log.command" title="执行命令" />
-            </code>
-            <span class="w-12 flex justify-center shrink-0">
-              <span :class="['w-2 h-2 rounded-full', log.status === 'success' ? 'bg-green-500' : log.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500']" />
-            </span>
-            <span class="w-20 text-right shrink-0 text-muted-foreground text-xs">{{ formatDuration(log.duration) }}</span>
-            <span v-if="!selectedLog" class="w-40 text-right shrink-0 text-muted-foreground text-xs hidden md:block">{{ log.created_at }}</span>
+            <!-- 小屏行 -->
+            <div class="flex sm:hidden items-center gap-2 px-3 py-2">
+              <span class="w-14 shrink-0 text-muted-foreground text-xs">#{{ log.id }}</span>
+              <span class="w-6 shrink-0 flex justify-center" :title="getTaskTypeTitle(log.task_type || 'task')">
+                <GitBranch v-if="log.task_type === 'repo'" class="h-3.5 w-3.5 text-primary" />
+                <Terminal v-else class="h-3.5 w-3.5 text-primary" />
+              </span>
+              <span class="flex-1 min-w-0 font-medium truncate text-xs">{{ log.task_name }}</span>
+              <span class="w-8 flex justify-center shrink-0">
+                <span :class="['w-2 h-2 rounded-full', log.status === 'success' ? 'bg-green-500' : log.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500']" />
+              </span>
+              <span class="w-12 text-right shrink-0 text-muted-foreground text-xs">{{ formatDuration(log.duration) }}</span>
+            </div>
+            <!-- 大屏行 -->
+            <div class="hidden sm:flex items-center gap-4 px-4 py-2">
+              <span class="w-16 shrink-0 text-muted-foreground text-sm">#{{ log.id }}</span>
+              <span class="w-10 shrink-0 flex justify-center" :title="getTaskTypeTitle(log.task_type || 'task')">
+                <GitBranch v-if="log.task_type === 'repo'" class="h-4 w-4 text-primary" />
+                <Terminal v-else class="h-4 w-4 text-primary" />
+              </span>
+              <span class="w-36 shrink-0 font-medium truncate text-sm">{{ log.task_name }}</span>
+              <code class="flex-1 min-w-0 text-muted-foreground truncate text-xs bg-muted px-2 py-1 rounded">
+                <TextOverflow :text="log.command" title="执行命令" />
+              </code>
+              <span class="w-12 flex justify-center shrink-0">
+                <span :class="['w-2 h-2 rounded-full', log.status === 'success' ? 'bg-green-500' : log.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500']" />
+              </span>
+              <span class="w-16 text-right shrink-0 text-muted-foreground text-xs">{{ formatDuration(log.duration) }}</span>
+              <span v-if="!selectedLog" class="w-40 text-right shrink-0 text-muted-foreground text-xs hidden md:block">{{ log.created_at }}</span>
+            </div>
           </div>
         </div>
         <!-- 分页 -->

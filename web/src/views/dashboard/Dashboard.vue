@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ListTodo, Variable, Clock, Play, ScrollText } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -11,6 +11,12 @@ const stats = ref<Stats>({ tasks: 0, today_execs: 0, envs: 0, logs: 0, scheduled
 const sendStats = ref<DailyStats[]>([])
 const taskStats = ref<TaskStatsItem[]>([])
 const chartsLoaded = ref(false)
+const isMobile = ref(window.innerWidth < 768)
+const chartDays = computed(() => isMobile.value ? 15 : 30)
+
+let lineChart: ApexCharts | null = null
+let pieChart: ApexCharts | null = null
+
 const statItems = [
   { key: 'today_execs', label: '今日执行', icon: Play, route: '/history' },
   { key: 'tasks', label: '任务总数', icon: ListTodo, route: '/tasks' },
@@ -22,6 +28,41 @@ const statItems = [
 
 function navigateTo(route?: string) {
   if (route) router.push(route)
+}
+
+function handleResize() {
+  const wasMobile = isMobile.value
+  isMobile.value = window.innerWidth < 768
+  if (wasMobile !== isMobile.value) {
+    reloadCharts()
+  }
+}
+
+async function reloadCharts() {
+  // 销毁旧图表
+  if (lineChart) {
+    lineChart.destroy()
+    lineChart = null
+  }
+  if (pieChart) {
+    pieChart.destroy()
+    pieChart = null
+  }
+  chartsLoaded.value = false
+
+  // 重新获取数据
+  const [sendStatsData, taskStatsData] = await Promise.all([
+    api.dashboard.sendStats(chartDays.value),
+    api.dashboard.taskStats(chartDays.value)
+  ])
+  sendStats.value = sendStatsData
+  taskStats.value = taskStatsData
+
+  setTimeout(() => {
+    renderLineChart()
+    renderPieChart()
+    chartsLoaded.value = true
+  }, 100)
 }
 
 const renderLineChart = () => {
@@ -145,7 +186,8 @@ const renderLineChart = () => {
     },
     responsive: [{ breakpoint: 768, options: { chart: { height: 200 }, legend: { position: 'bottom', offsetY: 0 } } }]
   }
-  new ApexCharts(document.querySelector("#stats-chart"), options).render()
+  lineChart = new ApexCharts(document.querySelector("#stats-chart"), options)
+  lineChart.render()
 }
 
 const renderPieChart = () => {
@@ -192,15 +234,17 @@ const renderPieChart = () => {
     },
     responsive: [{ breakpoint: 768, options: { chart: { height: 200 }, legend: { position: 'bottom' } } }]
   }
-  new ApexCharts(document.querySelector("#pie-chart"), options).render()
+  pieChart = new ApexCharts(document.querySelector("#pie-chart"), options)
+  pieChart.render()
 }
 
 onMounted(async () => {
+  window.addEventListener('resize', handleResize)
   try {
     const [statsData, sendStatsData, taskStatsData] = await Promise.all([
       api.dashboard.stats(),
-      api.dashboard.sendStats(),
-      api.dashboard.taskStats()
+      api.dashboard.sendStats(chartDays.value),
+      api.dashboard.taskStats(chartDays.value)
     ])
     stats.value = statsData
     sendStats.value = sendStatsData
@@ -211,6 +255,12 @@ onMounted(async () => {
       chartsLoaded.value = true
     }, 100)
   } catch {}
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  if (lineChart) lineChart.destroy()
+  if (pieChart) pieChart.destroy()
 })
 </script>
 
@@ -237,7 +287,7 @@ onMounted(async () => {
       <Card class="lg:col-span-7 h-[300px] sm:h-[340px]">
         <CardHeader class="pb-2">
           <CardTitle class="text-base sm:text-lg">执行统计</CardTitle>
-          <CardDescription class="text-xs sm:text-sm">最近30天任务执行情况</CardDescription>
+          <CardDescription class="text-xs sm:text-sm">最近{{ chartDays }}天任务执行情况</CardDescription>
         </CardHeader>
         <CardContent>
           <div id="stats-chart" class="w-full h-[200px] sm:h-[240px]">
@@ -251,7 +301,7 @@ onMounted(async () => {
       <Card class="lg:col-span-3 h-[300px] sm:h-[340px]">
         <CardHeader class="pb-2">
           <CardTitle class="text-base sm:text-lg">任务占比</CardTitle>
-          <CardDescription class="text-xs sm:text-sm">最近30天任务执行分布</CardDescription>
+          <CardDescription class="text-xs sm:text-sm">最近{{ chartDays }}天任务执行分布</CardDescription>
         </CardHeader>
         <CardContent>
           <div id="pie-chart" class="w-full h-[200px] sm:h-[240px]">

@@ -72,11 +72,19 @@ type DailyStats struct {
 	Failed  int    `json:"failed"`
 }
 
-// GetSendStats 获取最近30天发送统计
+// GetSendStats 获取发送统计
 func (dc *DashboardController) GetSendStats(c *gin.Context) {
-	// 获取最近30天的日期范围
+	// 获取天数参数，默认30天
+	days := 30
+	if d := c.Query("days"); d != "" {
+		if parsed, err := utils.ParseInt(d); err == nil && parsed > 0 && parsed <= 90 {
+			days = parsed
+		}
+	}
+
+	// 获取日期范围
 	now := time.Now()
-	startDay := now.AddDate(0, 0, -29).Format("2006-01-02")
+	startDay := now.AddDate(0, 0, -(days - 1)).Format("2006-01-02")
 
 	var stats []models.SendStats
 	database.DB.Where("day >= ?", startDay).Find(&stats)
@@ -97,8 +105,8 @@ func (dc *DashboardController) GetSendStats(c *gin.Context) {
 	}
 
 	// 填充缺失的日期
-	result := make([]DailyStats, 0, 30)
-	for i := 29; i >= 0; i-- {
+	result := make([]DailyStats, 0, days)
+	for i := days - 1; i >= 0; i-- {
 		day := now.AddDate(0, 0, -i).Format("2006-01-02")
 		if ds, ok := dayMap[day]; ok {
 			result = append(result, *ds)
@@ -122,10 +130,18 @@ type TaskStats struct {
 	Count    int    `json:"count"`
 }
 
-// GetTaskStats 获取最近30天任务执行占比
+// GetTaskStats 获取任务执行占比
 func (dc *DashboardController) GetTaskStats(c *gin.Context) {
+	// 获取天数参数，默认30天
+	days := 30
+	if d := c.Query("days"); d != "" {
+		if parsed, err := utils.ParseInt(d); err == nil && parsed > 0 && parsed <= 90 {
+			days = parsed
+		}
+	}
+
 	now := time.Now()
-	startDay := now.AddDate(0, 0, -29).Format("2006-01-02")
+	startDay := now.AddDate(0, 0, -(days - 1)).Format("2006-01-02")
 
 	// 按 task_id 聚合统计
 	var results []struct {
