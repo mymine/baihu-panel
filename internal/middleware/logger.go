@@ -37,7 +37,7 @@ func GinLogger() gin.HandlerFunc {
 			latencyStr = fmt.Sprintf("%.2fs", latency.Seconds())
 		}
 
-		msg := fmt.Sprintf("[HTTP] %d %s %s %s %s", status, method, path, latencyStr, clientIP)
+		msg := fmt.Sprintf("[HTTP] %d %s %s %s [%s]", status, method, path, latencyStr, clientIP)
 
 		if status >= 500 {
 			logger.Error(msg)
