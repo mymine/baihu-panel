@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Trash2, Package, Search, RefreshCw, Loader2, Download, FileText, RotateCw } from 'lucide-vue-next'
+import { Trash2, Package, Search, RefreshCw, Loader2, Download, FileText, RotateCw, AlertTriangle } from 'lucide-vue-next'
 import { api, type Dependency } from '@/api'
 import TextOverflow from '@/components/TextOverflow.vue'
 import { toast } from 'vue-sonner'
@@ -156,9 +156,31 @@ onMounted(loadDeps)
       <TabsList>
         <TabsTrigger value="py">Python</TabsTrigger>
         <TabsTrigger value="node">Node.js</TabsTrigger>
+        <TabsTrigger value="system">Debian</TabsTrigger>
       </TabsList>
 
-      <TabsContent :value="activeTab" class="mt-4">
+      <!-- 系统依赖提示 -->
+      <TabsContent value="system" class="mt-4">
+        <div class="rounded-lg border bg-card p-4 sm:p-6">
+          <div class="flex items-center gap-3 mb-3">
+            <AlertTriangle class="h-5 w-5 text-amber-500 shrink-0" />
+            <h3 class="font-medium">系统依赖 (Debian)</h3>
+          </div>
+          <div class="space-y-3 text-sm text-muted-foreground">
+            <p>
+              系统依赖需要通过终端使用 <code class="bg-muted px-1.5 py-0.5 rounded text-xs">apt-get install</code> 命令安装。或者使用自定义的bash脚本安装。
+            </p>
+            <p>
+              注意：Docker 容器重新创建后，手动安装的系统依赖会丢失。如需持久化，请在 Dockerfile 中添加依赖或使用自定义镜像。
+            </p>
+            <code class="block bg-muted px-3 py-2 rounded text-xs font-mono">
+              apt-get update && apt-get install -y &lt;package-name&gt;
+            </code>
+          </div>
+        </div>
+      </TabsContent>
+
+      <TabsContent :value="activeTab" v-if="activeTab !== 'system'" class="mt-4">
         <div class="rounded-lg border bg-card overflow-x-auto">
           <!-- 工具栏 -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-b bg-muted/30">
