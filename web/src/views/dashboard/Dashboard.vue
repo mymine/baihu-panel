@@ -251,7 +251,15 @@ const renderPieChart = () => {
       toolbar: { show: false },
       background: 'transparent',
       animations: {
-        enabled: false
+        enabled: true,
+        speed: 400,
+        animateGradually: {
+          enabled: false
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 400
+        }
       }
     },
     labels: taskStats.value.map(item => item.task_name),
