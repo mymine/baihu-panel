@@ -77,6 +77,7 @@ type Agent struct {
 	wsConn        *websocket.Conn
 	wsMu          sync.Mutex
 	stopCh        chan struct{}
+	wsStopCh      chan struct{} // 用于停止当前 WebSocket 相关的 goroutine
 }
 
 // generateMachineID 生成机器识别码
@@ -190,6 +191,7 @@ func (a *Agent) connectWS() error {
 
 	a.wsMu.Lock()
 	a.wsConn = conn
+	a.wsStopCh = make(chan struct{})
 	a.wsMu.Unlock()
 
 	log.Info("WebSocket 已连接")
@@ -202,6 +204,10 @@ func (a *Agent) connectWS() error {
 func (a *Agent) closeWS() {
 	a.wsMu.Lock()
 	defer a.wsMu.Unlock()
+	if a.wsStopCh != nil {
+		close(a.wsStopCh)
+		a.wsStopCh = nil
+	}
 	if a.wsConn != nil {
 		a.wsConn.Close()
 		a.wsConn = nil
@@ -209,6 +215,8 @@ func (a *Agent) closeWS() {
 }
 
 func (a *Agent) readWS() {
+	defer a.closeWS() // 读取结束时关闭连接，停止 heartbeatLoop
+
 	for {
 		a.wsMu.Lock()
 		conn := a.wsConn
@@ -327,9 +335,19 @@ func (a *Agent) heartbeatLoop() {
 	ticker := time.NewTicker(time.Duration(a.config.Interval) * time.Second)
 	defer ticker.Stop()
 
+	a.wsMu.Lock()
+	wsStopCh := a.wsStopCh
+	a.wsMu.Unlock()
+
+	if wsStopCh == nil {
+		return
+	}
+
 	for {
 		select {
 		case <-a.stopCh:
+			return
+		case <-wsStopCh:
 			return
 		case <-ticker.C:
 			a.wsMu.Lock()

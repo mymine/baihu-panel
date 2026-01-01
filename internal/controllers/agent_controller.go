@@ -413,9 +413,8 @@ func (c *AgentController) wsReadPump(ac *services.AgentConnection, agent *models
 		c.wsManager.Unregister(agent.ID)
 	}()
 
-	// 检查连接是否有效
+	// 检查连接是否有效（可能是旧连接被新连接替换）
 	if ac == nil || ac.IsClosed() {
-		logger.Warnf("[AgentWS] Agent #%d 连接无效", agent.ID)
 		return
 	}
 
