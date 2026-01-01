@@ -410,6 +410,7 @@ func (c *AgentController) wsReadPump(ac *services.AgentConnection, agent *models
 		if r := recover(); r != nil {
 			logger.Errorf("[AgentWS] Agent #%d wsReadPump panic: %v", agent.ID, r)
 		}
+		logger.Infof("[AgentWS] Agent #%d wsReadPump 退出", agent.ID)
 		c.wsManager.Unregister(agent.ID, ac)
 	}()
 
@@ -450,6 +451,7 @@ func (c *AgentController) wsWritePump(ac *services.AgentConnection) {
 		if r := recover(); r != nil {
 			logger.Errorf("[AgentWS] Agent #%d wsWritePump panic: %v", ac.AgentID, r)
 		}
+		logger.Infof("[AgentWS] Agent #%d wsWritePump 退出", ac.AgentID)
 	}()
 
 	ticker := time.NewTicker(30 * time.Second)
@@ -459,12 +461,15 @@ func (c *AgentController) wsWritePump(ac *services.AgentConnection) {
 		select {
 		case message, ok := <-ac.Send:
 			if !ok {
+				logger.Warnf("[AgentWS] Agent #%d Send channel 已关闭", ac.AgentID)
 				return
 			}
 			if ac.IsClosed() {
+				logger.Warnf("[AgentWS] Agent #%d 连接已关闭(write)", ac.AgentID)
 				return
 			}
 			if err := ac.WriteMessage(message); err != nil {
+				logger.Warnf("[AgentWS] Agent #%d 写入消息失败: %v", ac.AgentID, err)
 				return
 			}
 		case <-ticker.C:
@@ -472,6 +477,7 @@ func (c *AgentController) wsWritePump(ac *services.AgentConnection) {
 				return
 			}
 			if err := ac.WritePing(); err != nil {
+				logger.Warnf("[AgentWS] Agent #%d 发送 Ping 失败: %v", ac.AgentID, err)
 				return
 			}
 		}
