@@ -8,8 +8,42 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
 import { api } from '@/api'
 import { useSiteSettings } from '@/composables/useSiteSettings'
 
+const SENTENCE_CACHE_KEY = 'sentence_cache'
+const SENTENCE_CACHE_TIME_KEY = 'sentence_cache_time'
+const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24小时
+
+// 从 localStorage 加载缓存的诗句
+function loadSentenceFromCache(): string | null {
+  try {
+    const cached = localStorage.getItem(SENTENCE_CACHE_KEY)
+    const cacheTime = localStorage.getItem(SENTENCE_CACHE_TIME_KEY)
+    
+    if (cached && cacheTime) {
+      const age = Date.now() - parseInt(cacheTime)
+      // 如果缓存未过期，使用缓存
+      if (age < CACHE_DURATION) {
+        return cached
+      }
+    }
+  } catch {
+    // 忽略错误
+  }
+  return null
+}
+
+// 保存诗句到 localStorage
+function saveSentenceToCache(sentence: string) {
+  try {
+    localStorage.setItem(SENTENCE_CACHE_KEY, sentence)
+    localStorage.setItem(SENTENCE_CACHE_TIME_KEY, Date.now().toString())
+  } catch {
+    // 忽略存储错误
+  }
+}
+
 const route = useRoute()
-const sentence = ref('欢迎使用白虎面板')
+const cachedSentence = loadSentenceFromCache()
+const sentence = ref(cachedSentence || '欢迎使用白虎面板')
 const { siteSettings, loadSettings } = useSiteSettings()
 const mobileMenuOpen = ref(false)
 
@@ -52,14 +86,15 @@ async function loadSentence() {
   try {
     const res = await api.dashboard.sentence()
     sentence.value = res.sentence
+    saveSentenceToCache(res.sentence) // 保存到缓存
   } catch {
-    // 加载失败保持默认
+    // 加载失败保持默认或缓存值
   }
 }
 
 onMounted(() => {
   loadSettings()
-  loadSentence()
+  loadSentence() // 后台更新诗句
 })
 </script>
 
