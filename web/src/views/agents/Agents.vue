@@ -280,7 +280,7 @@ onUnmounted(() => {
                   <span class="truncate">{{ agent.version || '-' }}</span>
                 </div>
               </div>
-              <div class="flex items-center gap-1 mt-2 pt-2 border-t">
+              <div class="flex items-center justify-end gap-1 mt-2 pt-2 border-t">
                 <Button variant="ghost" size="sm" class="h-7 text-xs" @click="forceUpdate(agent)">
                   <RotateCw class="h-3 w-3 mr-1" />更新
                 </Button>
