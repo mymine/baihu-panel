@@ -21,13 +21,13 @@ mkdir -p \
 # ============================
 (
     if [ ! -x "$PYTHON_VENV_DIR/bin/python" ]; then
-        echo "[entrypoint] Creating Python virtual environment..."
+        echo "[entrypoint][Python3] Creating Python virtual environment..."
         python3 -m venv "$PYTHON_VENV_DIR"
         "$PYTHON_VENV_DIR/bin/pip" config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
         "$PYTHON_VENV_DIR/bin/pip" install --upgrade pip setuptools wheel
-        echo "[entrypoint] Python venv created"
+        echo "[entrypoint][Python3] Python venv created"
     else
-        echo "[entrypoint] Python venv exists"
+        echo "[entrypoint][Python3] Python venv exists"
     fi
 ) &
 PYTHON_PID=$!
@@ -36,7 +36,7 @@ PYTHON_PID=$!
 # Node 环境（后台并行）
 # ============================
 (
-    echo "[entrypoint] Initializing Node npm prefix..."
+    echo "[entrypoint][Nodejs] Initializing Node npm prefix..."
     # npm 全局安装目录 → /app/envs/node
     npm config set prefix "$NODE_ENV_DIR"
     # npm 行为优化（防内存暴涨）
@@ -45,7 +45,7 @@ PYTHON_PID=$!
     npm config set fund false
     npm config set progress false
     npm config set maxsockets 2
-    echo "[entrypoint] Node npm configured"
+    echo "[entrypoint][Nodejs] Node npm configured"
 ) &
 NODE_PID=$!
 
