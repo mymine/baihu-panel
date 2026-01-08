@@ -232,14 +232,14 @@ async function save() {
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">超时/清理</Label>
-          <div class="sm:col-span-3 flex flex-wrap items-center gap-3">
+          <div class="sm:col-span-3 flex flex-wrap items-center gap-2">
             <div class="flex items-center gap-1.5">
-              <Input v-model.number="form.timeout" type="number" placeholder="30" class="w-16 h-8 text-sm" />
-              <span class="text-xs text-muted-foreground">分钟</span>
+              <Input v-model.number="form.timeout" type="number" placeholder="30" class="w-20 h-9 text-sm" />
+              <span class="text-sm text-muted-foreground whitespace-nowrap">分钟</span>
             </div>
             <div class="flex items-center gap-1.5">
               <Select :model-value="cleanType" @update:model-value="(v) => cleanType = String(v || 'none')">
-                <SelectTrigger class="w-20 h-8 text-sm">
+                <SelectTrigger class="w-24 h-9 text-sm">
                   <SelectValue placeholder="不清理" />
                 </SelectTrigger>
                 <SelectContent>
@@ -248,7 +248,7 @@ async function save() {
                   <SelectItem value="count">按条数</SelectItem>
                 </SelectContent>
               </Select>
-              <Input v-if="cleanType && cleanType !== 'none'" v-model.number="cleanKeep" type="number" :placeholder="cleanType === 'day' ? '天' : '条'" class="w-14 h-8 text-sm" />
+              <Input v-if="cleanType && cleanType !== 'none'" v-model.number="cleanKeep" type="number" :placeholder="cleanType === 'day' ? '7' : '100'" class="w-20 h-9 text-sm" />
             </div>
           </div>
         </div>

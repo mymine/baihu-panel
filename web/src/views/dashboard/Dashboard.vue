@@ -110,7 +110,7 @@ const renderLineChart = () => {
     ],
     chart: {
       type: 'line',
-      height: 240,
+      height: 300,
       toolbar: { show: false },
       background: 'transparent',
       animations: {
@@ -221,7 +221,7 @@ const renderLineChart = () => {
         </div>`
       }
     },
-    responsive: [{ breakpoint: 768, options: { chart: { height: 200 }, legend: { position: 'bottom', offsetY: 0 } } }]
+    responsive: [{ breakpoint: 768, options: { chart: { height: 260 }, legend: { position: 'bottom', offsetY: 0 } } }]
   }
   lineChart = new ApexCharts(container, options)
   lineChart.render()
@@ -247,7 +247,7 @@ const renderPieChart = () => {
     series: taskStats.value.map(item => item.count),
     chart: {
       type: 'donut',
-      height: 200,
+      height: 260,
       toolbar: { show: false },
       background: 'transparent',
       animations: {
@@ -334,7 +334,7 @@ const renderPieChart = () => {
       style: { fontSize: '12px', fontFamily: 'Inter, sans-serif' },
       y: { formatter: (val: number) => val + ' 次' }
     },
-    responsive: [{ breakpoint: 768, options: { chart: { height: 200 }, legend: { position: 'bottom' } } }]
+    responsive: [{ breakpoint: 768, options: { chart: { height: 260 }, legend: { position: 'bottom' } } }]
   }
   pieChart = new ApexCharts(container, options)
   pieChart.render()
@@ -401,13 +401,13 @@ onUnmounted(() => {
     </div>
 
     <div class="grid gap-4 lg:grid-cols-10">
-      <Card class="lg:col-span-7 h-[300px] sm:h-[340px]">
+      <Card class="lg:col-span-7 h-[400px] sm:h-[400px]">
         <CardHeader class="pb-2">
           <CardTitle class="text-base sm:text-lg">执行统计</CardTitle>
           <CardDescription class="text-xs sm:text-sm">最近{{ chartDays }}天任务执行情况</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div id="stats-chart" class="w-full h-[200px] sm:h-[240px]">
+        <CardContent class="pb-8">
+          <div id="stats-chart" class="w-full h-[300px] sm:h-[300px]">
             <div v-if="!chartsLoaded" class="h-full flex items-center justify-center text-muted-foreground text-sm">
               加载中...
             </div>
@@ -415,13 +415,13 @@ onUnmounted(() => {
         </CardContent>
       </Card>
 
-      <Card class="lg:col-span-3 h-[300px] sm:h-[340px]">
+      <Card class="lg:col-span-3 h-[400px] sm:h-[400px]">
         <CardHeader class="pb-0">
           <CardTitle class="text-base sm:text-lg">任务占比</CardTitle>
           <CardDescription class="text-xs sm:text-sm">最近{{ chartDays }}天任务执行分布</CardDescription>
         </CardHeader>
-        <CardContent class="pt-0">
-          <div id="pie-chart" class="w-full h-[200px] sm:h-[240px]">
+        <CardContent class="pt-0 pb-8">
+          <div id="pie-chart" class="w-full h-[300px] sm:h-[300px]">
             <div v-if="!chartsLoaded" class="h-full flex items-center justify-center text-muted-foreground text-sm">
               加载中...
             </div>

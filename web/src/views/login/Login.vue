@@ -19,7 +19,45 @@ const siteSubtitle = ref('轻量级定时任务管理系统')
 const siteIcon = ref('')
 const demoMode = ref(false)
 
+// 从 localStorage 加载缓存的站点设置
+function loadCachedSettings() {
+  try {
+    const cached = localStorage.getItem('site_settings')
+    if (cached) {
+      const settings = JSON.parse(cached)
+      siteTitle.value = settings.title || '白虎面板'
+      siteSubtitle.value = settings.subtitle || '轻量级定时任务管理系统'
+      siteIcon.value = settings.icon || ''
+      demoMode.value = settings.demo_mode || false
+      document.title = siteTitle.value
+      
+      // 设置 favicon
+      if (siteIcon.value && siteIcon.value.trim().startsWith('<svg')) {
+        const blob = new Blob([siteIcon.value], { type: 'image/svg+xml' })
+        const url = URL.createObjectURL(blob)
+        let link = document.querySelector("link[rel*='icon']") as HTMLLinkElement
+        if (!link) {
+          link = document.createElement('link')
+          link.rel = 'icon'
+          document.head.appendChild(link)
+        }
+        link.type = 'image/svg+xml'
+        link.href = url
+      }
+      
+      return true
+    }
+  } catch (e) {
+    console.error('加载缓存的站点设置失败:', e)
+  }
+  return false
+}
+
 async function loadSiteSettings() {
+  // 先加载缓存
+  const hasCached = loadCachedSettings()
+  
+  // 后台异步更新
   try {
     const res = await api.settings.getPublicSite()
     siteTitle.value = res.title || '白虎面板'
@@ -27,11 +65,21 @@ async function loadSiteSettings() {
     siteIcon.value = res.icon || ''
     demoMode.value = res.demo_mode || false
     document.title = siteTitle.value
+    
+    // 保存到 localStorage
+    localStorage.setItem('site_settings', JSON.stringify({
+      title: siteTitle.value,
+      subtitle: siteSubtitle.value,
+      icon: siteIcon.value,
+      demo_mode: demoMode.value
+    }))
+    
     // 演示模式下自动填充账号密码
     if (demoMode.value) {
       username.value = 'admin'
       password.value = '123456'
     }
+    
     // 设置 favicon
     if (siteIcon.value && siteIcon.value.trim().startsWith('<svg')) {
       const blob = new Blob([siteIcon.value], { type: 'image/svg+xml' })
@@ -46,7 +94,11 @@ async function loadSiteSettings() {
       link.href = url
     }
   } catch {
-    // 使用默认值
+    // 如果没有缓存，使用默认值
+    if (!hasCached) {
+      siteTitle.value = '白虎面板'
+      siteSubtitle.value = '轻量级定时任务管理系统'
+    }
   }
 }
 
