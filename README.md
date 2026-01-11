@@ -329,9 +329,159 @@ table_prefix = baihu_
 
 </details>
 
-#### 关于推送
+## 消息推送集成
 
-面板现在没有推送功能，还在考虑方式，但是现在有很多现成的消息聚合面板（这里自荐下自己的另一个项目[Message-Push-Nest](https://github.com/engigu/Message-Push-Nest)），如果大家有合适的方式可以提交Issue。
+<details>
+<summary><b>点击展开查看推送集成方案</b></summary>
+
+白虎面板本身不内置推送功能，但可以与消息聚合服务配合使用。可以推荐使用 [Message-Push-Nest](https://github.com/engigu/Message-Push-Nest) 作为统一的消息推送中心。
+
+### 一键部署（白虎 + 消息推送）
+
+**方式一：使用 SQLite（推荐，简单快速）**
+
+创建 `docker-compose.yml` 文件：
+
+```yaml
+version: "3.7"
+
+services:
+  # 白虎面板
+  baihu:
+    image: ghcr.io/engigu/baihu:latest
+    container_name: baihu
+    ports:
+      - "8052:8052"
+    volumes:
+      - ./data:/app/data
+      - ./envs:/app/envs
+    environment:
+      - TZ=Asia/Shanghai
+      - BH_SERVER_PORT=8052
+      - BH_SERVER_HOST=0.0.0.0
+      - BH_DB_TYPE=sqlite
+      - BH_DB_PATH=/app/data/ql.db
+      - BH_DB_TABLE_PREFIX=baihu_
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    depends_on:
+      - message-nest
+
+  # 消息推送服务
+  message-nest:
+    image: ghcr.io/engigu/message-nest:latest
+    # 或使用 Docker Hub 镜像
+    # image: engigu/message-nest:latest
+    container_name: message-nest
+    ports:
+      - "8053:8000"
+    environment:
+      - TZ=Asia/Shanghai
+      - DB_TYPE=sqlite
+    volumes:
+      - ./message-nest-data:/app/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+```
+
+**方式二：使用 MySQL（适合生产环境，需要已有 MySQL 服务）**
+
+创建 `docker-compose.yml` 文件：
+
+```yaml
+version: "3.7"
+
+services:
+  # 白虎面板
+  baihu:
+    image: ghcr.io/engigu/baihu:latest
+    container_name: baihu
+    ports:
+      - "8052:8052"
+    volumes:
+      - ./data:/app/data
+      - ./envs:/app/envs
+    environment:
+      - TZ=Asia/Shanghai
+      - BH_SERVER_PORT=8052
+      - BH_SERVER_HOST=0.0.0.0
+      - BH_DB_TYPE=mysql
+      - BH_DB_HOST=192.168.1.100  # 修改为你的 MySQL 地址
+      - BH_DB_PORT=3306
+      - BH_DB_USER=root
+      - BH_DB_PASSWORD=your_password  # 修改为你的 MySQL 密码
+      - BH_DB_NAME=baihu
+      - BH_DB_TABLE_PREFIX=baihu_
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    depends_on:
+      - message-nest
+
+  # 消息推送服务
+  message-nest:
+    image: ghcr.io/engigu/message-nest:latest
+    # 或使用 Docker Hub 镜像
+    # image: engigu/message-nest:latest
+    container_name: message-nest
+    ports:
+      - "8053:8000"
+    environment:
+      - TZ=Asia/Shanghai
+      - DB_TYPE=mysql
+      - MYSQL_HOST=192.168.1.100  # 修改为你的 MySQL 地址
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=your_password  # 修改为你的 MySQL 密码
+      - MYSQL_DB=message_nest
+      - MYSQL_TABLE_PREFIX=message_
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+```
+
+启动服务：
+
+```bash
+docker-compose up -d
+```
+
+**访问地址：**
+- 白虎面板：http://localhost:8052
+- 消息推送服务：http://localhost:8053
+
+> 注意：使用 MySQL 方式时，请先在 MySQL 中创建 `baihu` 和 `message_nest` 两个数据库，并修改配置中的 MySQL 地址和密码。也可以使用同一个库。
+
+### 在任务中使用推送
+
+Message-Push-Nest 提供了便捷的推送代码生成功能：
+
+1. 在 Message-Push-Nest 管理界面中配置推送渠道（如企业微信、钉钉、邮件等）
+2. 在「消息模板」或「任务」页面，点击「复制推送代码」按钮
+3. 选择对应的编程语言（Python、Bash、Node.js 等）
+4. 将生成的代码粘贴到白虎面板的任务脚本中需要推送的位置
+
+> 提示：在 Docker Compose 部署的环境中，推送服务地址使用 `http://message-nest:8000`（容器内部通信）。如果是独立部署，请使用实际的服务地址。
+
+### 其他推送方案
+
+如果你有其他推送需求或建议，欢迎提交 Issue 讨论。
+
+</details>
 
 ## 贡献 
 
