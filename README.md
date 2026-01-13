@@ -107,7 +107,7 @@ docker run -d \
 > ```bash
 > -e BH_SERVER_URL_PREFIX=/baihu
 > ```
-> 配置后访问地址为 `http://your-domain.com/baihu`，详见下方「URL 前缀配置」说明。
+> 配置后访问地址为 `http://your-domain.com/baihu/`，详见下方「URL 前缀配置」说明。
 
 **Docker Compose（SQLite）：**
 
