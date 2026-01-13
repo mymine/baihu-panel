@@ -231,7 +231,7 @@ func Setup(c *Controllers) *gin.Engine {
 
 	// 如果配置了前缀，添加重定向：/prefix -> /prefix/
 	if urlPrefix != "" {
-		root.GET("", func(ctx *gin.Context) {
+		router.GET(urlPrefix, func(ctx *gin.Context) {
 			ctx.Redirect(301, urlPrefix+"/")
 		})
 	}
