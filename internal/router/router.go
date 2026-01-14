@@ -216,6 +216,12 @@ func Setup(c *Controllers) *gin.Engine {
 				agents.POST("/tokens", c.Agent.CreateToken)
 				agents.DELETE("/tokens/:id", c.Agent.DeleteToken)
 			}
+
+			// Agent API（供前端调用，保持在 v1 下）
+			agentAPIv1 := authorized.Group("/agent")
+			{
+				agentAPIv1.GET("/download", c.Agent.Download)
+			}
 		}
 	}
 
@@ -225,8 +231,8 @@ func Setup(c *Controllers) *gin.Engine {
 		agentAPI.POST("/heartbeat", c.Agent.Heartbeat)
 		agentAPI.GET("/tasks", c.Agent.GetTasks)
 		agentAPI.POST("/report", c.Agent.ReportResult)
-		agentAPI.GET("/download", c.Agent.Download)
-		agentAPI.GET("/ws", c.Agent.WSConnect) // WebSocket 连接
+		agentAPI.GET("/download", c.Agent.Download) // 也在这里注册，兼容 Agent 调用
+		agentAPI.GET("/ws", c.Agent.WSConnect)      // WebSocket 连接
 	}
 
 	// SPA fallback - serve index.html (no cache for HTML)
