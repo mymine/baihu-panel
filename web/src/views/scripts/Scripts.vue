@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +31,9 @@ const deletePath = ref<string | null>(null)
 const showUnsavedDialog = ref(false)
 const pendingNode = ref<FileNode | null>(null)
 
+// Monaco Editor 实例引用
+const editorRef = shallowRef()
+
 const hasChanges = computed(() => fileContent.value !== originalContent.value)
 
 const editorLanguage = computed(() => {
@@ -45,6 +48,16 @@ const editorLanguage = computed(() => {
   if (name.endsWith('.go')) return 'go'
   return 'plaintext'
 })
+
+// 编辑器挂载时的回调
+function handleEditorMount(editor: any) {
+  editorRef.value = editor
+  // 强制设置换行符为 LF
+  const model = editor.getModel()
+  if (model) {
+    model.setEOL(0) // 0 = LF, 1 = CRLF
+  }
+}
 
 // 更新 URL - 每次清空重建
 function updateUrl() {
@@ -308,12 +321,10 @@ onMounted(loadTree)
             scrollBeyondLastLine: false,
             automaticLayout: true,
             tabSize: 2,
-            wordWrap: 'on',
-            files: {
-              eol: '\n'
-            }
+            wordWrap: 'on'
           }"
           style="height: 100%"
+          @mount="handleEditorMount"
         />
         <div v-else class="h-full flex items-center justify-center text-muted-foreground text-sm">
           选择一个文件开始编辑

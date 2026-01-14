@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, computed, onUnmounted, nextTick, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,9 +45,22 @@ const showTerminalDialog = ref(false)
 const terminalRef = ref<InstanceType<typeof XTerminal> | null>(null)
 const runCommand = ref('')
 
+// Monaco Editor 实例引用
+const editorRef = shallowRef()
+
 // 响应式字体大小
 const isSmallScreen = ref(window.innerWidth < 1024)
 const editorFontSize = computed(() => isSmallScreen.value ? 12 : 13)
+
+// 编辑器挂载时的回调
+function handleEditorMount(editor: any) {
+  editorRef.value = editor
+  // 强制设置换行符为 LF
+  const model = editor.getModel()
+  if (model) {
+    model.setEOL(0) // 0 = LF, 1 = CRLF
+  }
+}
 
 function handleResize() {
   isSmallScreen.value = window.innerWidth < 1024
@@ -411,11 +424,9 @@ onUnmounted(() => {
             tabSize: 4,
             insertSpaces: true,
             readOnly: !isEditMode,
-            domReadOnly: !isEditMode,
-            files: {
-              eol: '\n'
-            }
+            domReadOnly: !isEditMode
           }"
+          @mount="handleEditorMount"
         />
         <div v-else class="h-full flex items-center justify-center text-muted-foreground text-sm">
           <span class="lg:hidden">从上方选择文件开始编辑</span>
