@@ -308,7 +308,10 @@ onMounted(loadTree)
             scrollBeyondLastLine: false,
             automaticLayout: true,
             tabSize: 2,
-            wordWrap: 'on'
+            wordWrap: 'on',
+            files: {
+              eol: '\n'
+            }
           }"
           style="height: 100%"
         />

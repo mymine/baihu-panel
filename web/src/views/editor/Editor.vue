@@ -411,7 +411,10 @@ onUnmounted(() => {
             tabSize: 4,
             insertSpaces: true,
             readOnly: !isEditMode,
-            domReadOnly: !isEditMode
+            domReadOnly: !isEditMode,
+            files: {
+              eol: '\n'
+            }
           }"
         />
         <div v-else class="h-full flex items-center justify-center text-muted-foreground text-sm">
