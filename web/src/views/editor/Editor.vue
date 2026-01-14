@@ -195,14 +195,19 @@ async function runScript() {
   }
   
   showTerminalDialog.value = true
-  // 等待 DOM 更新后初始化终端
+  // 等待 DOM 更新后初始化终端，增加延迟确保 Dialog 完全渲染
   await nextTick()
-  terminalRef.value?.initTerminal(true)
+  setTimeout(() => {
+    terminalRef.value?.initTerminal(true)
+  }, 100)
 }
 
 function closeTerminal() {
   showTerminalDialog.value = false
-  terminalRef.value?.dispose()
+  // 延迟清理，确保 Dialog 关闭动画完成
+  setTimeout(() => {
+    terminalRef.value?.dispose()
+  }, 300)
 }
 
 async function handleMove(oldPath: string, newPath: string) {
