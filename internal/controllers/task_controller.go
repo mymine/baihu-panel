@@ -4,10 +4,10 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"baihu/internal/constant"
-	"baihu/internal/services"
-	"baihu/internal/services/tasks"
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/services"
+	"github.com/engigu/baihu-panel/internal/services/tasks"
+	"github.com/engigu/baihu-panel/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

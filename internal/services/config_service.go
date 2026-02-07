@@ -1,8 +1,8 @@
 package services
 
 import (
-	"baihu/internal/constant"
-	"baihu/internal/logger"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/logger"
 	"os"
 	"strconv"
 
@@ -67,7 +67,7 @@ func LoadConfig(path string) (*AppConfig, error) {
 			Port:        3306,
 			User:        "root",
 			Password:    "",
-			DBName:      "baihu",
+			DBName:      "github.com/engigu/baihu-panel",
 			Path:        constant.DefaultDBPath,
 			TablePrefix: "baihu_",
 		},

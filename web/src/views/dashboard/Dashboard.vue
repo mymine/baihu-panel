@@ -37,23 +37,23 @@ function animateNumber(key: keyof Stats, target: number) {
   const start = displayStats.value[key]
   const duration = 800 // 动画持续时间
   const startTime = performance.now()
-  
+
   function update(currentTime: number) {
     const elapsed = currentTime - startTime
     const progress = Math.min(elapsed / duration, 1)
-    
+
     // 使用 easeOutCubic 缓动函数
     const easeProgress = 1 - Math.pow(1 - progress, 3)
-    
+
     displayStats.value[key] = Math.round(start + (target - start) * easeProgress)
-    
+
     if (progress < 1) {
       requestAnimationFrame(update)
     } else {
       displayStats.value[key] = target
     }
   }
-  
+
   requestAnimationFrame(update)
 }
 
@@ -79,7 +79,7 @@ function getGridColor() {
 function handleThemeChange() {
   // 初始化期间忽略主题变化
   if (isInitializing) return
-  
+
   const newIsDark = document.documentElement.classList.contains('dark')
   if (newIsDark !== isDark.value) {
     isDark.value = newIsDark
@@ -127,11 +127,11 @@ async function reloadCharts() {
   // 等待 Vue 更新 DOM
   await nextTick()
   await new Promise(resolve => setTimeout(resolve, 100))
-  
+
   // 检查容器是否存在再渲染
   const statsChart = document.querySelector("#stats-chart")
   const pieChartEl = document.querySelector("#pie-chart")
-  
+
   if (statsChart && pieChartEl && statsChart.parentElement && pieChartEl.parentElement) {
     renderLineChart()
     renderPieChart()
@@ -143,15 +143,15 @@ async function reloadCharts() {
 const renderLineChart = () => {
   const container = document.querySelector("#stats-chart")
   if (!container || !container.parentElement) return
-  
+
   if (lineChart) {
     lineChart.destroy()
     lineChart = null
   }
-  
+
   // 清空容器
   container.innerHTML = ''
-  
+
   const textColor = getTextColor()
   const gridColor = getGridColor()
   const options = {
@@ -282,18 +282,18 @@ const renderLineChart = () => {
 
 const renderPieChart = () => {
   if (taskStats.value.length === 0) return
-  
+
   const container = document.querySelector("#pie-chart")
   if (!container || !container.parentElement) return
-  
+
   if (pieChart) {
     pieChart.destroy()
     pieChart = null
   }
-  
+
   // 清空容器
   container.innerHTML = ''
-  
+
   const totalCount = taskStats.value.reduce((sum, item) => sum + item.count, 0)
   const textColor = getTextColor()
   const options = {
@@ -366,13 +366,13 @@ const renderPieChart = () => {
     dataLabels: {
       enabled: true,
       formatter: (val: number) => val.toFixed(1) + '%',
-      style: { 
-        fontSize: '11px', 
-        fontFamily: 'Inter, sans-serif', 
-        fontWeight: 'bold', 
+      style: {
+        fontSize: '11px',
+        fontFamily: 'Inter, sans-serif',
+        fontWeight: 'bold',
         colors: ['#ffffff']
       },
-      dropShadow: { 
+      dropShadow: {
         enabled: true,
         top: 1,
         left: 1,
@@ -395,7 +395,7 @@ const renderPieChart = () => {
 
 onMounted(async () => {
   window.addEventListener('resize', handleResize)
-  
+
   try {
     const [statsData, sendStatsData, taskStatsData] = await Promise.all([
       api.dashboard.stats(),
@@ -405,13 +405,13 @@ onMounted(async () => {
     updateStats(statsData)
     sendStats.value = sendStatsData
     taskStats.value = taskStatsData
-    
+
     // 渲染图表
     setTimeout(() => {
       renderLineChart()
       renderPieChart()
       chartsLoaded.value = true
-      
+
       // 图表渲染完成后，延迟启动主题监听，避免初始化时的闪烁
       setTimeout(() => {
         isInitializing = false
@@ -422,7 +422,7 @@ onMounted(async () => {
         themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
       }, 500)
     }, 100)
-  } catch {}
+  } catch { }
 })
 
 onUnmounted(() => {
@@ -448,7 +448,8 @@ onUnmounted(() => {
     </div>
 
     <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-      <Card v-for="item in statItems" :key="item.key" class="cursor-pointer hover:bg-accent/50 transition-colors" @click="navigateTo(item.route)">
+      <Card v-for="item in statItems" :key="item.key" class="cursor-pointer hover:bg-accent/50 transition-colors"
+        @click="navigateTo(item.route)">
         <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle class="text-xs sm:text-sm font-medium">{{ item.label }}</CardTitle>
           <component :is="item.icon" class="h-4 w-4 text-muted-foreground" />
@@ -467,7 +468,8 @@ onUnmounted(() => {
         </CardHeader>
         <CardContent class="relative h-[300px]">
           <div id="stats-chart" class="w-full h-full"></div>
-          <div v-if="!chartsLoaded" class="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm bg-card">
+          <div v-if="!chartsLoaded"
+            class="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm bg-card">
             加载中...
           </div>
         </CardContent>
@@ -480,10 +482,12 @@ onUnmounted(() => {
         </CardHeader>
         <CardContent class="relative h-[300px]">
           <div id="pie-chart" class="w-full h-full"></div>
-          <div v-if="!chartsLoaded" class="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm bg-card">
+          <div v-if="!chartsLoaded"
+            class="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm bg-card">
             加载中...
           </div>
-          <div v-else-if="taskStats.length === 0" class="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm bg-card">
+          <div v-else-if="taskStats.length === 0"
+            class="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm bg-card">
             暂无数据
           </div>
         </CardContent>

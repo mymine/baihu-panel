@@ -3,8 +3,8 @@ package utils
 import (
 	"strconv"
 
-	"baihu/internal/cache"
-	"baihu/internal/constant"
+	"github.com/engigu/baihu-panel/internal/cache"
+	"github.com/engigu/baihu-panel/internal/constant"
 
 	"github.com/gin-gonic/gin"
 )

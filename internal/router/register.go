@@ -1,10 +1,10 @@
 package router
 
 import (
-	"baihu/internal/constant"
-	"baihu/internal/controllers"
-	"baihu/internal/services"
-	"baihu/internal/services/tasks"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/controllers"
+	"github.com/engigu/baihu-panel/internal/services"
+	"github.com/engigu/baihu-panel/internal/services/tasks"
 )
 
 var cronService *tasks.CronService

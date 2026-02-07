@@ -4,11 +4,11 @@ import (
 	"sort"
 	"time"
 
-	"baihu/internal/constant"
-	"baihu/internal/database"
-	"baihu/internal/models"
-	"baihu/internal/services/tasks"
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/database"
+	"github.com/engigu/baihu-panel/internal/models"
+	"github.com/engigu/baihu-panel/internal/services/tasks"
+	"github.com/engigu/baihu-panel/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

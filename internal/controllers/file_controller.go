@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

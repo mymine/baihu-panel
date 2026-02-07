@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"baihu/internal/constant"
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

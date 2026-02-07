@@ -12,6 +12,19 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        base_type: [debian, alpine, debian13]
+        include:
+          - base_type: debian
+            base_tag: base
+            tag_suffix: ""
+          - base_type: alpine
+            base_tag: base-alpine
+            tag_suffix: "-alpine"
+          - base_type: debian13
+            base_tag: base-debian13
+            tag_suffix: "-debian13"
 
     permissions:
       contents: read
@@ -41,8 +54,9 @@ jobs:
           images: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}}-arm64
-            type=raw,value=latest-arm64,enable={{is_default_branch}}
+            type=semver,pattern={{version}}-arm64${{ matrix.tag_suffix }}
+            type=raw,value=latest-arm64${{ matrix.tag_suffix }},enable={{is_default_branch}}
+            type=ref,event=branch,suffix=-arm64${{ matrix.tag_suffix }}
 
       - name: Get build time
         id: build_time
@@ -52,6 +66,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./docker/Dockerfile
           platforms: linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -59,6 +74,7 @@ jobs:
           build-args: |
             VERSION=${{ github.ref_name }}
             BUILD_TIME=${{ steps.build_time.outputs.time }}
-          cache-from: type=gha,scope=linux-arm64
-          cache-to: type=gha,scope=linux-arm64,mode=max
+            BASE_TAG=${{ matrix.base_tag }}
+          cache-from: type=gha,scope=linux-arm64-${{ matrix.base_type }}
+          cache-to: type=gha,scope=linux-arm64-${{ matrix.base_type }},mode=max
           provenance: false

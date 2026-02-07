@@ -10,8 +10,8 @@ import (
 	"sync"
 	"unicode/utf8"
 
-	"baihu/internal/constant"
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/utils"
 
 	"github.com/creack/pty"
 	"github.com/gin-gonic/gin"

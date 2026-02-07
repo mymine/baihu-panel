@@ -5,9 +5,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"baihu/internal/database"
-	"baihu/internal/logger"
-	"baihu/internal/models"
+	"github.com/engigu/baihu-panel/internal/database"
+	"github.com/engigu/baihu-panel/internal/logger"
+	"github.com/engigu/baihu-panel/internal/models"
 )
 
 type DependencyService struct{}

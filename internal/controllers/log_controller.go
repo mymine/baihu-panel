@@ -3,9 +3,9 @@ package controllers
 import (
 	"strconv"
 
-	"baihu/internal/database"
-	"baihu/internal/models"
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/database"
+	"github.com/engigu/baihu-panel/internal/models"
+	"github.com/engigu/baihu-panel/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

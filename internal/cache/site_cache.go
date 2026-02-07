@@ -3,9 +3,9 @@ package cache
 import (
 	"sync"
 
-	"baihu/internal/constant"
-	"baihu/internal/database"
-	"baihu/internal/models"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/database"
+	"github.com/engigu/baihu-panel/internal/models"
 )
 
 // siteCache 站点设置内存缓存

@@ -12,6 +12,19 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        base_type: [debian, alpine, debian13]
+        include:
+          - base_type: debian
+            base_tag: base
+            tag_suffix: ""
+          - base_type: alpine
+            base_tag: base-alpine
+            tag_suffix: "-alpine"
+          - base_type: debian13
+            base_tag: base-debian13
+            tag_suffix: "-debian13"
 
     permissions:
       contents: read
@@ -38,10 +51,9 @@ jobs:
           images: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}}-amd64
-            type=raw,value=latest-amd64,enable={{is_default_branch}}
-            type=ref,event=branch,suffix=-amd64
-            type=sha,prefix={{branch}}-,suffix=-amd64
+            type=raw,value=latest-amd64${{ matrix.tag_suffix }},enable={{is_default_branch}}
+            type=ref,event=branch,suffix=-amd64${{ matrix.tag_suffix }}
+            type=sha,prefix={{branch}}-,suffix=-amd64${{ matrix.tag_suffix }}
 
       - name: Get build time
         id: build_time
@@ -51,6 +63,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./docker/Dockerfile
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -58,11 +71,13 @@ jobs:
           build-args: |
             VERSION=${{ github.ref_name }}
             BUILD_TIME=${{ steps.build_time.outputs.time }}
-          cache-from: type=gha,scope=linux-amd64
-          cache-to: type=gha,scope=linux-amd64,mode=max
+            BASE_TAG=${{ matrix.base_tag }}
+          cache-from: type=gha,scope=linux-amd64-${{ matrix.base_type }}
+          cache-to: type=gha,scope=linux-amd64-${{ matrix.base_type }},mode=max
           provenance: false
 
       - name: Deploy to Demo server
+        if: github.ref == 'refs/heads/main' && matrix.base_type == 'debian'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -71,10 +86,11 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT }}
           script: |
             cd ${{ secrets.DEPLOY_PATH }}
-            docker-compose pull
-            docker-compose up -d
+            docker-compose -f docker/docker-compose.yml pull
+            docker-compose -f docker/docker-compose.yml up -d
 
       - name: Deploy to X server
+        if: github.ref == 'refs/heads/main' && matrix.base_type == 'debian'
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -83,5 +99,5 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT }}
           script: |
             cd ${{ secrets.DEPLOY_X_PATH }}
-            docker-compose pull
-            docker-compose up -d
+            docker-compose -f docker/docker-compose.yml pull
+            docker-compose -f docker/docker-compose.yml up -d

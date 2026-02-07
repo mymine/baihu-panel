@@ -1,11 +1,11 @@
 package services
 
 import (
-	"baihu/internal/constant"
-	"baihu/internal/database"
-	"baihu/internal/logger"
-	"baihu/internal/models"
-	"baihu/internal/services/tasks"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/database"
+	"github.com/engigu/baihu-panel/internal/logger"
+	"github.com/engigu/baihu-panel/internal/models"
+	"github.com/engigu/baihu-panel/internal/services/tasks"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"

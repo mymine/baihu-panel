@@ -1,11 +1,11 @@
 package tasks
 
 import (
-	"baihu/internal/constant"
-	"baihu/internal/database"
-	"baihu/internal/logger"
-	"baihu/internal/models"
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/database"
+	"github.com/engigu/baihu-panel/internal/logger"
+	"github.com/engigu/baihu-panel/internal/models"
+	"github.com/engigu/baihu-panel/internal/utils"
 	"bytes"
 	"context"
 	"encoding/json"

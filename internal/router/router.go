@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	"baihu/internal/controllers"
-	"baihu/internal/middleware"
-	"baihu/internal/services"
-	"baihu/internal/static"
+	"github.com/engigu/baihu-panel/internal/controllers"
+	"github.com/engigu/baihu-panel/internal/middleware"
+	"github.com/engigu/baihu-panel/internal/services"
+	"github.com/engigu/baihu-panel/internal/static"
 
 	"github.com/gin-gonic/gin"
 )

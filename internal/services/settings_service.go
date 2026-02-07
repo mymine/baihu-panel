@@ -1,10 +1,10 @@
 package services
 
 import (
-	"baihu/internal/cache"
-	"baihu/internal/constant"
-	"baihu/internal/database"
-	"baihu/internal/models"
+	"github.com/engigu/baihu-panel/internal/cache"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/database"
+	"github.com/engigu/baihu-panel/internal/models"
 )
 
 type SettingsService struct{}

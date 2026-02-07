@@ -1,8 +1,8 @@
 package tasks
 
 import (
-	"baihu/internal/database"
-	"baihu/internal/models"
+	"github.com/engigu/baihu-panel/internal/database"
+	"github.com/engigu/baihu-panel/internal/models"
 )
 
 type TaskService struct{}

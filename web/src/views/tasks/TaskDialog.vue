@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Badge } from '@/components/ui/badge'
 import DirTreeSelect from '@/components/DirTreeSelect.vue'
 import { Plus, ChevronDown, X } from 'lucide-vue-next'
 import { api, type Task, type EnvVar, type Agent } from '@/api'
@@ -132,8 +131,7 @@ function addEnv(id: number) {
 }
 
 function removeEnv(id: number) {
-  const idx = selectedEnvIds.value.indexOf(id)
-  if (idx !== -1) selectedEnvIds.value.splice(idx, 1)
+  selectedEnvIds.value = selectedEnvIds.value.filter(envId => envId !== id)
 }
 
 async function save() {
@@ -266,10 +264,10 @@ async function save() {
               </PopoverContent>
             </Popover>
             <div v-if="selectedEnvs.length > 0" class="flex flex-wrap gap-1">
-              <Badge v-for="env in selectedEnvs" :key="env.id" variant="secondary" class="gap-0.5 pr-0.5 text-xs h-5">
-                {{ env.name }}
-                <X class="h-2.5 w-2.5 cursor-pointer hover:text-destructive" @click.stop="removeEnv(env.id)" />
-              </Badge>
+              <div v-for="env in selectedEnvs" :key="env.id" class="inline-flex items-center gap-0.5 px-2 py-0.5 text-xs h-5 rounded-full bg-secondary text-secondary-foreground">
+                <span>{{ env.name }}</span>
+                <X class="h-2.5 w-2.5 cursor-pointer hover:text-destructive" @click="removeEnv(env.id)" />
+              </div>
             </div>
           </div>
         </div>

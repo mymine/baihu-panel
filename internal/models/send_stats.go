@@ -1,7 +1,7 @@
 package models
 
 import (
-	"baihu/internal/constant"
+	"github.com/engigu/baihu-panel/internal/constant"
 )
 
 // SendStats 任务执行统计

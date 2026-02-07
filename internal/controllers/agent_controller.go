@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"baihu/internal/logger"
-	"baihu/internal/models"
-	"baihu/internal/services"
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/logger"
+	"github.com/engigu/baihu-panel/internal/models"
+	"github.com/engigu/baihu-panel/internal/services"
+	"github.com/engigu/baihu-panel/internal/utils"
 	"encoding/json"
 	"net/http"
 	"strconv"

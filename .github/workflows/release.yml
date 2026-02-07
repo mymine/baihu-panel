@@ -14,9 +14,39 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        base_type: [debian, alpine, debian13]
         platform:
           - linux/amd64
           - linux/arm64
+        include:
+          - base_type: debian
+            platform: linux/arm/v7
+            base_tag: base
+            tag_suffix: ""
+          - base_type: debian
+            platform: linux/amd64
+            base_tag: base
+            tag_suffix: ""
+          - base_type: debian
+            platform: linux/arm64
+            base_tag: base
+            tag_suffix: ""
+          - base_type: alpine
+            platform: linux/amd64
+            base_tag: base-alpine
+            tag_suffix: "-alpine"
+          - base_type: alpine
+            platform: linux/arm64
+            base_tag: base-alpine
+            tag_suffix: "-alpine"
+          - base_type: debian13
+            platform: linux/amd64
+            base_tag: base-debian13
+            tag_suffix: "-debian13"
+          - base_type: debian13
+            platform: linux/arm64
+            base_tag: base-debian13
+            tag_suffix: "-debian13"
 
     permissions:
       contents: read
@@ -30,7 +60,7 @@ jobs:
         id: platform
         run: |
           platform=${{ matrix.platform }}
-          echo "pair=${platform//\//-}" >> $GITHUB_OUTPUT
+          echo "pair=${platform//\//-}-${{ matrix.base_type }}" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -61,10 +91,12 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./docker/Dockerfile
           platforms: ${{ matrix.platform }}
           build-args: |
             VERSION=${{ github.ref_name }}
             BUILD_TIME=${{ steps.build_time.outputs.time }}
+            BASE_TAG=${{ matrix.base_tag }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=${{ steps.platform.outputs.pair }}
@@ -88,6 +120,16 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     needs: build
+    strategy:
+      matrix:
+        base_type: [debian, alpine, debian13]
+        include:
+          - base_type: debian
+            tag_suffix: ""
+          - base_type: alpine
+            tag_suffix: "-alpine"
+          - base_type: debian13
+            tag_suffix: "-debian13"
 
     permissions:
       contents: write
@@ -101,7 +143,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests
-          pattern: digests-*
+          pattern: digests-*-${{ matrix.base_type }}
           merge-multiple: true
 
       - name: Set up Docker Buildx
@@ -121,8 +163,8 @@ jobs:
           images: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{version}}
-            type=raw,value=latest
+            type=semver,pattern={{version}}${{ matrix.tag_suffix }}
+            type=raw,value=latest${{ matrix.tag_suffix }}
 
       - name: Create manifest list and push
         working-directory: /tmp/digests
@@ -132,9 +174,10 @@ jobs:
 
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}${{ matrix.tag_suffix }}
 
       - name: Create GitHub Release
+        if: matrix.base_type == 'debian'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}

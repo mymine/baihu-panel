@@ -1,7 +1,6 @@
 # 白虎面板 
 
 [![Hits](https://hits.sh/github.com/engigu/baihu-panel.svg?view=today-total)](https://hits.sh/github.com/engigu/baihu-panel/)
-[![Image Tags](https://ghcr-badge.egpl.dev/engigu/baihu/tags?color=%2344cc11&ignore=latest%2Cmain*%2Cdev&n=3&label=docker+tags&trim=)](https://ghcr-badge.egpl.dev/engigu/baihu/tags)
 ![Latest Version](https://ghcr-badge.egpl.dev/engigu/baihu/latest_tag?color=%2344cc11&ignore=latest%2Cmain*&label=docker+version&trim=)
 ![Image Size](https://ghcr-badge.egpl.dev/engigu/baihu/size?color=%2344cc11&tag=latest&label=docker+image&trim=)
 ![Image pulls](https://img.shields.io/badge/dynamic/json?url=https://ghcr-badge.elias.eu.org/api/engigu/baihu-panel/baihu&query=downloadCount&style=flat&label=docker%20pulls&color=44cc11)
@@ -9,6 +8,14 @@
 白虎面板是一个轻量级定时任务管理系统，基于`Go`+`Vue3`构建，`docker`或者`docker-compose`，内置`python3`、`nodejs`、`bash`环境，开箱即用。
 
 演示站点(演示站点的服务器比较烂，见谅)  [演示站点](https://baihu-demo-site.qwapi.eu.org/)
+
+## 更新日志 ☕
+
+### 最近更新
+
+**2026.02.06** - 整理 Docker 目录结构，增加 Alpine 及 Debian 13 (Trixie) 镜像支持  
+
+[查看完整更新日志](./CHANGELOG.md)
 
 ## 项目来由
 
@@ -23,6 +30,8 @@
 同样的定时场景和代码，这个项目的情况如下（cpu执行定时跳变不超过`20%`）：
 
 ![baihu.gif](https://f.pz.al/pzal/2025/12/24/f0d171f9a686d.gif)
+
+如果项目有用，请帮忙点个star。
 
 ## 特色
 

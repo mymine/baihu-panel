@@ -3,8 +3,8 @@ package controllers
 import (
 	"strconv"
 
-	"baihu/internal/services/tasks"
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/services/tasks"
+	"github.com/engigu/baihu-panel/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

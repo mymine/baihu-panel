@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"baihu/internal/constant"
-	"baihu/internal/database"
-	"baihu/internal/logger"
-	"baihu/internal/router"
-	"baihu/internal/services"
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/database"
+	"github.com/engigu/baihu-panel/internal/logger"
+	"github.com/engigu/baihu-panel/internal/router"
+	"github.com/engigu/baihu-panel/internal/services"
 
 	"github.com/gin-gonic/gin"
 )

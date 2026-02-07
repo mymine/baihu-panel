@@ -1,6 +1,6 @@
 package main
 
-import "baihu/internal/bootstrap"
+import "github.com/engigu/baihu-panel/internal/bootstrap"
 
 func main() {
 	bootstrap.New().Run()

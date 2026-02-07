@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"strings"
 
-	"baihu/internal/models"
-	"baihu/internal/services"
-	"baihu/internal/utils"
+	"github.com/engigu/baihu-panel/internal/models"
+	"github.com/engigu/baihu-panel/internal/services"
+	"github.com/engigu/baihu-panel/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )

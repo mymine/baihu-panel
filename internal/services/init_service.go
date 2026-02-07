@@ -1,7 +1,7 @@
 package services
 
 import (
-	"baihu/internal/logger"
+	"github.com/engigu/baihu-panel/internal/logger"
 )
 
 type InitService struct {

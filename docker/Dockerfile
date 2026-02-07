@@ -1,7 +1,8 @@
+ARG BASE_TAG=base
 # ================================
 # Stage 1: Build frontend
 # ================================
-FROM node:20-alpine AS frontend-builder
+FROM --platform=$BUILDPLATFORM node:20-alpine AS frontend-builder
 
 WORKDIR /app/web
 
@@ -59,7 +60,7 @@ COPY --from=frontend-builder /app/web/dist ./internal/static/dist
 RUN VERSION_VAL=$(cat /build-info/version.txt) && \
     BUILD_TIME_VAL=$(cat /build-info/build_time.txt) && \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-    go build -ldflags="-s -w -X baihu/internal/constant.Version=${VERSION_VAL} -X 'baihu/internal/constant.BuildTime=${BUILD_TIME_VAL}'" \
+    go build -ldflags="-s -w -X github.com/engigu/baihu-panel/internal/constant.Version=${VERSION_VAL} -X 'github.com/engigu/baihu-panel/internal/constant.BuildTime=${BUILD_TIME_VAL}'" \
     -o baihu .
 
 # ================================
@@ -104,7 +105,8 @@ RUN VERSION_VAL=$(cat /build-info/version.txt) && \
 # ================================
 # Stage 4: Final image
 # ================================
-FROM ghcr.io/engigu/baihu:base
+ARG BASE_TAG
+FROM ghcr.io/engigu/baihu:${BASE_TAG}
 
 ENV TZ=Asia/Shanghai
 ENV PATH="/app/envs/node/bin:/app/envs/python/bin:$PATH"
@@ -130,7 +132,7 @@ COPY --from=frontend-builder /app/web/dist ./internal/static/dist
 
 # Copy configs and entrypoint
 COPY --from=backend-builder /app/configs ./configs
-COPY docker-entrypoint.sh .
+COPY docker/docker-entrypoint.sh .
 
 # Copy sync.py to /opt
 COPY custom/sync.py /opt/sync.py

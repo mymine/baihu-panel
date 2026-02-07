@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"baihu/internal/logger"
+	"github.com/engigu/baihu-panel/internal/logger"
 
 	"github.com/gin-gonic/gin"
 )

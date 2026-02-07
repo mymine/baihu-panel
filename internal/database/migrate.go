@@ -1,8 +1,8 @@
 package database
 
 import (
-	"baihu/internal/logger"
-	"baihu/internal/models"
+	"github.com/engigu/baihu-panel/internal/logger"
+	"github.com/engigu/baihu-panel/internal/models"
 )
 
 func Migrate() error {

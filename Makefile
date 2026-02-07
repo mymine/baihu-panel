@@ -6,7 +6,7 @@ GOGET=go get
 GOMOD=go mod
 VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BUILD_TIME=$(shell date '+%Y/%m/%d %H:%M:%S')
-LDFLAGS=-ldflags="-s -w -X 'baihu/internal/constant.Version=$(VERSION)' -X 'baihu/internal/constant.BuildTime=$(BUILD_TIME)'"
+LDFLAGS=-ldflags="-s -w -X 'github.com/engigu/baihu-panel/internal/constant.Version=$(VERSION)' -X 'github.com/engigu/baihu-panel/internal/constant.BuildTime=$(BUILD_TIME)'"
 
 # Default target
 all: build
@@ -66,7 +66,7 @@ deps:
 
 # Docker build
 docker-build:
-	docker build -t $(BINARY) .
+	docker build -t $(BINARY) -f docker/Dockerfile .
 
 # Docker run
 docker-run:
@@ -74,11 +74,11 @@ docker-run:
 
 # Docker compose up
 docker-up:
-	docker-compose up -d
+	docker-compose -f docker/docker-compose.yml up -d
 
 # Docker compose down
 docker-down:
-	docker-compose down
+	docker-compose -f docker/docker-compose.yml down
 
 # Help
 help:

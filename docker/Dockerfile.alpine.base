@@ -1,0 +1,24 @@
+FROM alpine:3.19
+
+ENV TZ=Asia/Shanghai
+ENV PATH="/app/envs/node/bin:/app/envs/python/bin:$PATH"
+ENV NODE_PATH="/app/envs/node/lib/node_modules"
+
+# 安装必要系统工具 + Node + Python
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
+    && apk add --no-cache \
+        tzdata \
+        git \
+        gcc \
+        musl-dev \
+        curl \
+        wget \
+        vim \
+        nodejs \
+        npm \
+        python3 \
+        py3-pip \
+        htop \
+    && cp /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && echo "${TZ}" > /etc/timezone \
+    && rm -rf /var/cache/apk/*
