@@ -7,57 +7,84 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-var Log *logrus.Logger
+var Log *zap.Logger
+var Sugar *zap.SugaredLogger
+var atomicLevel zap.AtomicLevel
 
-// CustomFormatter 自定义日志格式
-type CustomFormatter struct{}
-
-// ANSI 颜色代码 (参考 logrus 默认配色)
+// ANSI 颜色代码
 const (
 	colorReset  = "\033[0m"
 	colorRed    = "\033[31m" // error, fatal, panic
 	colorYellow = "\033[33m" // warn
-	colorBlue   = "\033[36m" // info (logrus 默认用 cyan)
-	colorGray   = "\033[37m" // debug (logrus 默认用 white)
+	colorBlue   = "\033[36m" // info
+	colorGray   = "\033[37m" // debug
 )
 
-func (f *CustomFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	timestamp := entry.Time.Format("2006-01-02 15:04:05")
-	level := strings.ToUpper(entry.Level.String())
+// customCore 实现 zapcore.Core 以提供与 logrus 一模一样的格式
+type customCore struct {
+	level  zapcore.LevelEnabler
+	writer zapcore.WriteSyncer
+}
 
-	// 根据日志级别设置颜色 (参考 logrus TextFormatter 默认配色)
+func (c *customCore) Enabled(l zapcore.Level) bool {
+	return c.level.Enabled(l)
+}
+
+func (c *customCore) With(fields []zapcore.Field) zapcore.Core {
+	// 目前忽略字段，以保持与旧 logrus 格式一模一样（旧格式只输出 entry.Message）
+	return c
+}
+
+func (c *customCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
+	if c.Enabled(ent.Level) {
+		return ce.AddCore(ent, c)
+	}
+	return ce
+}
+
+func (c *customCore) Write(ent zapcore.Entry, fields []zapcore.Field) error {
+	timestamp := ent.Time.Format("2006-01-02 15:04:05")
+	level := strings.ToUpper(ent.Level.String())
+
 	var levelColor string
-	switch entry.Level {
-	case logrus.DebugLevel, logrus.TraceLevel:
+	switch ent.Level {
+	case zapcore.DebugLevel:
 		levelColor = colorGray
-	case logrus.InfoLevel:
+	case zapcore.InfoLevel:
 		levelColor = colorBlue
-	case logrus.WarnLevel:
+	case zapcore.WarnLevel:
 		levelColor = colorYellow
-	case logrus.ErrorLevel, logrus.FatalLevel, logrus.PanicLevel:
+	case zapcore.ErrorLevel, zapcore.DPanicLevel, zapcore.PanicLevel, zapcore.FatalLevel:
 		levelColor = colorRed
 	default:
 		levelColor = colorBlue
 	}
 
-	msg := fmt.Sprintf("[%s]%s[%s]%s %s\n", timestamp, levelColor, level, colorReset, entry.Message)
-	return []byte(msg), nil
+	msg := fmt.Sprintf("[%s]%s[%s]%s %s\n", timestamp, levelColor, level, colorReset, ent.Message)
+	_, err := c.writer.Write([]byte(msg))
+	return err
+}
+
+func (c *customCore) Sync() error {
+	return c.writer.Sync()
+}
+
+func newLogger(output zapcore.WriteSyncer) *zap.Logger {
+	core := &customCore{
+		level:  atomicLevel,
+		writer: output,
+	}
+	return zap.New(core)
 }
 
 func init() {
-	Log = logrus.New()
-
-	// 设置自定义日志格式
-	Log.SetFormatter(&CustomFormatter{})
-
-	// 设置日志级别
-	Log.SetLevel(logrus.InfoLevel)
-
-	// 输出到标准输出
-	Log.SetOutput(os.Stdout)
+	atomicLevel = zap.NewAtomicLevelAt(zap.InfoLevel)
+	Log = newLogger(zapcore.AddSync(os.Stdout))
+	Sugar = Log.Sugar()
 }
 
 // SetupFileOutput 设置文件输出
@@ -72,7 +99,8 @@ func SetupFileOutput(logDir string) error {
 		return err
 	}
 
-	Log.SetOutput(file)
+	Log = newLogger(zapcore.AddSync(file))
+	Sugar = Log.Sugar()
 	return nil
 }
 
@@ -80,52 +108,56 @@ func SetupFileOutput(logDir string) error {
 func SetLevel(level string) {
 	switch level {
 	case "debug":
-		Log.SetLevel(logrus.DebugLevel)
+		atomicLevel.SetLevel(zap.DebugLevel)
 	case "info":
-		Log.SetLevel(logrus.InfoLevel)
+		atomicLevel.SetLevel(zap.InfoLevel)
 	case "warn":
-		Log.SetLevel(logrus.WarnLevel)
+		atomicLevel.SetLevel(zap.WarnLevel)
 	case "error":
-		Log.SetLevel(logrus.ErrorLevel)
+		atomicLevel.SetLevel(zap.ErrorLevel)
 	default:
-		Log.SetLevel(logrus.InfoLevel)
+		atomicLevel.SetLevel(zap.InfoLevel)
 	}
 }
 
 // 便捷方法
-func Debug(args ...interface{}) { Log.Debug(args...) }
-func Info(args ...interface{})  { Log.Info(args...) }
-func Warn(args ...interface{})  { Log.Warn(args...) }
-func Error(args ...interface{}) { Log.Error(args...) }
-func Fatal(args ...interface{}) { Log.Fatal(args...) }
+func Debug(args ...interface{}) { Sugar.Debug(args...) }
+func Info(args ...interface{})  { Sugar.Info(args...) }
+func Warn(args ...interface{})  { Sugar.Warn(args...) }
+func Error(args ...interface{}) { Sugar.Error(args...) }
+func Fatal(args ...interface{}) { Sugar.Fatal(args...) }
 
-func Debugf(format string, args ...interface{}) { Log.Debugf(format, args...) }
-func Infof(format string, args ...interface{})  { Log.Infof(format, args...) }
-func Warnf(format string, args ...interface{})  { Log.Warnf(format, args...) }
-func Errorf(format string, args ...interface{}) { Log.Errorf(format, args...) }
-func Fatalf(format string, args ...interface{}) { Log.Fatalf(format, args...) }
+func Debugf(format string, args ...interface{}) { Sugar.Debugf(format, args...) }
+func Infof(format string, args ...interface{})  { Sugar.Infof(format, args...) }
+func Warnf(format string, args ...interface{})  { Sugar.Warnf(format, args...) }
+func Errorf(format string, args ...interface{}) { Sugar.Errorf(format, args...) }
+func Fatalf(format string, args ...interface{}) { Sugar.Fatalf(format, args...) }
 
 // WithField 带字段的日志
-func WithField(key string, value interface{}) *logrus.Entry {
-	return Log.WithField(key, value)
+func WithField(key string, value interface{}) *zap.SugaredLogger {
+	return Sugar.With(key, value)
 }
 
 // WithFields 带多个字段的日志
-func WithFields(fields logrus.Fields) *logrus.Entry {
-	return Log.WithFields(fields)
+func WithFields(fields map[string]interface{}) *zap.SugaredLogger {
+	f := make([]interface{}, 0, len(fields)*2)
+	for k, v := range fields {
+		f = append(f, k, v)
+	}
+	return Sugar.With(f...)
 }
 
 // SchedulerLogger 兼容 internal/executor 的日志接口
 type SchedulerLogger struct{}
 
 func (s *SchedulerLogger) Infof(format string, args ...interface{}) {
-	Log.Infof(format, args...)
+	Sugar.Infof(format, args...)
 }
 func (s *SchedulerLogger) Warnf(format string, args ...interface{}) {
-	Log.Warnf(format, args...)
+	Sugar.Warnf(format, args...)
 }
 func (s *SchedulerLogger) Errorf(format string, args ...interface{}) {
-	Log.Errorf(format, args...)
+	Sugar.Errorf(format, args...)
 }
 
 // NewSchedulerLogger 创建一个兼容 executor.SchedulerLogger 的实例
