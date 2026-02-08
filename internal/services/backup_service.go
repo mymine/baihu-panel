@@ -7,11 +7,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"time"
 
 	"github.com/engigu/baihu-panel/internal/constant"
 	"github.com/engigu/baihu-panel/internal/database"
 	"github.com/engigu/baihu-panel/internal/models"
+	"gorm.io/gorm"
 )
 
 type BackupService struct {
@@ -33,7 +35,7 @@ const (
 // tableConfig 表备份配置
 type tableConfig struct {
 	filename string
-	export   func() (any, error)
+	export   func(io.Writer) error
 	restore  func([]byte) error
 }
 
@@ -46,17 +48,51 @@ func (s *BackupService) getTableConfigs() []tableConfig {
 		{"settings.json", s.exportSettings, s.restoreSettings},
 		{"send_stats.json", s.exportTable(&[]models.SendStats{}, false), s.restoreTable(&[]models.SendStats{}, false)},
 		{"login_logs.json", s.exportTable(&[]models.LoginLog{}, false), s.restoreTable(&[]models.LoginLog{}, false)},
+		{"agents.json", s.exportTable(&[]models.Agent{}, true), s.restoreTable(&[]models.Agent{}, true)},
+		{"tokens.json", s.exportTable(&[]models.AgentToken{}, true), s.restoreTable(&[]models.AgentToken{}, true)},
 	}
 }
 
-func (s *BackupService) exportTable(dest any, unscoped bool) func() (any, error) {
-	return func() (any, error) {
+func (s *BackupService) exportTable(modelPtr any, unscoped bool) func(io.Writer) error {
+	return func(w io.Writer) error {
 		db := database.DB
 		if unscoped {
 			db = db.Unscoped()
 		}
-		db.Find(dest)
-		return dest, nil
+
+		if _, err := w.Write([]byte("[\n")); err != nil {
+			return err
+		}
+
+		first := true
+		err := db.FindInBatches(modelPtr, 1000, func(tx *gorm.DB, batch int) error {
+			val := reflect.ValueOf(modelPtr).Elem()
+			count := val.Len()
+			for i := 0; i < count; i++ {
+				if !first {
+					if _, err := w.Write([]byte(",\n")); err != nil {
+						return err
+					}
+				}
+				item := val.Index(i).Interface()
+				jsonData, err := json.MarshalIndent(item, "  ", "  ")
+				if err != nil {
+					return err
+				}
+				if _, err := w.Write(jsonData); err != nil {
+					return err
+				}
+				first = false
+			}
+			return nil
+		}).Error
+
+		if err != nil {
+			return err
+		}
+
+		_, err = w.Write([]byte("\n]"))
+		return err
 	}
 }
 
@@ -69,10 +105,17 @@ func (s *BackupService) restoreTable(dest any, unscoped bool) func([]byte) error
 	}
 }
 
-func (s *BackupService) exportSettings() (any, error) {
+func (s *BackupService) exportSettings(w io.Writer) error {
 	var data []models.Setting
-	database.DB.Where("section != ?", BackupSection).Find(&data)
-	return data, nil
+	if err := database.DB.Where("section != ?", BackupSection).Find(&data).Error; err != nil {
+		return err
+	}
+	jsonData, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(jsonData)
+	return err
 }
 
 func (s *BackupService) restoreSettings(data []byte) error {
@@ -100,19 +143,11 @@ func (s *BackupService) CreateBackup() (string, error) {
 
 	// 导出各表
 	for _, cfg := range s.getTableConfigs() {
-		data, err := cfg.export()
-		if err != nil {
-			return "", err
-		}
-		jsonData, err := json.MarshalIndent(data, "", "  ")
-		if err != nil {
-			return "", err
-		}
 		w, err := zipWriter.Create(cfg.filename)
 		if err != nil {
 			return "", err
 		}
-		if _, err := w.Write(jsonData); err != nil {
+		if err := cfg.export(w); err != nil {
 			return "", err
 		}
 	}
@@ -144,82 +179,115 @@ func (s *BackupService) Restore(zipPath string) error {
 		fileMap[f.Name] = f
 	}
 
-	// 读取所有表数据
-	tableData := make(map[string][]byte)
-	for _, cfg := range configs {
-		if f, ok := fileMap[cfg.filename]; ok {
-			data, err := s.readZipFile(f)
-			if err != nil {
-				return err
+	// 开启全局事务
+	return database.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. 清空现有数据（物理删除）
+		tx.Unscoped().Where("1=1").Delete(&models.Task{})
+		tx.Unscoped().Where("1=1").Delete(&models.TaskLog{})
+		tx.Unscoped().Where("1=1").Delete(&models.EnvironmentVariable{})
+		tx.Unscoped().Where("1=1").Delete(&models.Script{})
+		tx.Unscoped().Where("section != ?", BackupSection).Delete(&models.Setting{})
+		tx.Unscoped().Where("1=1").Delete(&models.SendStats{})
+		tx.Unscoped().Where("1=1").Delete(&models.LoginLog{})
+		tx.Unscoped().Where("1=1").Delete(&models.Agent{})
+		tx.Unscoped().Where("1=1").Delete(&models.AgentToken{})
+
+		// 2. 依次恢复每个表
+		for _, cfg := range configs {
+			if f, ok := fileMap[cfg.filename]; ok {
+				if err := s.restoreFromZipFile(tx, f, cfg.filename); err != nil {
+					return err
+				}
 			}
-			tableData[cfg.filename] = data
+		}
+
+		// 3. 恢复 scripts 文件夹
+		s.restoreScriptsDir(r)
+
+		return nil
+	})
+}
+
+func (s *BackupService) restoreFromZipFile(tx *gorm.DB, f *zip.File, filename string) error {
+	rc, err := f.Open()
+	if err != nil {
+		return err
+	}
+	defer rc.Close()
+
+	// 特殊处理设置表（设置表通常很小，直接反序列化）
+	if filename == "settings.json" {
+		data, _ := io.ReadAll(rc)
+		var settings []models.Setting
+		if err := json.Unmarshal(data, &settings); err == nil {
+			if len(settings) > 0 {
+				return tx.Create(&settings).Error
+			}
+		}
+		return nil
+	}
+
+	// 流式解析 JSON 数组
+	decoder := json.NewDecoder(rc)
+
+	// 找到数组开始 [
+	if t, err := decoder.Token(); err != nil || t != json.Delim('[') {
+		return fmt.Errorf("invalid json format: expected %s", filename)
+	}
+
+	batchSize := 1000
+	var batch []any
+
+	// 根据文件名确定模型类型
+	getModel := func() any {
+		switch filename {
+		case "tasks.json":
+			return &models.Task{}
+		case "task_logs.json":
+			return &models.TaskLog{}
+		case "envs.json":
+			return &models.EnvironmentVariable{}
+		case "scripts.json":
+			return &models.Script{}
+		case "send_stats.json":
+			return &models.SendStats{}
+		case "login_logs.json":
+			return &models.LoginLog{}
+		case "agents.json":
+			return &models.Agent{}
+		case "tokens.json":
+			return &models.AgentToken{}
+		default:
+			return nil
 		}
 	}
 
-	// 清空现有数据（物理删除）
-	database.DB.Unscoped().Where("1=1").Delete(&models.Task{})
-	database.DB.Unscoped().Where("1=1").Delete(&models.TaskLog{})
-	database.DB.Unscoped().Where("1=1").Delete(&models.EnvironmentVariable{})
-	database.DB.Unscoped().Where("1=1").Delete(&models.Script{})
-	database.DB.Unscoped().Where("section != ?", BackupSection).Delete(&models.Setting{})
-	database.DB.Unscoped().Where("1=1").Delete(&models.SendStats{})
-	database.DB.Unscoped().Where("1=1").Delete(&models.LoginLog{})
+	for decoder.More() {
+		m := getModel()
+		if m == nil {
+			break
+		}
+		if err := decoder.Decode(m); err != nil {
+			return err
+		}
+		batch = append(batch, m)
 
-	// 恢复数据
-	s.restoreFromData(tableData, "tasks.json", &[]models.Task{})
-	s.restoreFromData(tableData, "task_logs.json", &[]models.TaskLog{})
-	s.restoreFromData(tableData, "envs.json", &[]models.EnvironmentVariable{})
-	s.restoreFromData(tableData, "scripts.json", &[]models.Script{})
-	s.restoreFromData(tableData, "settings.json", &[]models.Setting{})
-	s.restoreFromData(tableData, "send_stats.json", &[]models.SendStats{})
-	s.restoreFromData(tableData, "login_logs.json", &[]models.LoginLog{})
+		if len(batch) >= batchSize {
+			if err := tx.CreateInBatches(batch, batchSize).Error; err != nil {
+				return err
+			}
+			batch = nil
+		}
+	}
 
-	// 恢复 scripts 文件夹
-	s.restoreScriptsDir(r)
+	if len(batch) > 0 {
+		return tx.CreateInBatches(batch, batchSize).Error
+	}
 
 	return nil
 }
 
-func (s *BackupService) restoreFromData(tableData map[string][]byte, filename string, dest any) {
-	if data, ok := tableData[filename]; ok {
-		if err := json.Unmarshal(data, dest); err == nil {
-			s.insertRecords(dest)
-		}
-	}
-}
-
-func (s *BackupService) insertRecords(records any) {
-	switch v := records.(type) {
-	case *[]models.Task:
-		for _, r := range *v {
-			database.DB.Create(&r)
-		}
-	case *[]models.TaskLog:
-		for _, r := range *v {
-			database.DB.Create(&r)
-		}
-	case *[]models.EnvironmentVariable:
-		for _, r := range *v {
-			database.DB.Create(&r)
-		}
-	case *[]models.Script:
-		for _, r := range *v {
-			database.DB.Create(&r)
-		}
-	case *[]models.Setting:
-		for _, r := range *v {
-			database.DB.Create(&r)
-		}
-	case *[]models.SendStats:
-		for _, r := range *v {
-			database.DB.Create(&r)
-		}
-	case *[]models.LoginLog:
-		for _, r := range *v {
-			database.DB.Create(&r)
-		}
-	}
-}
+// insertRecords, restoreFromData 方法已合并入 restoreFromZipFile，此处删除冗余方法
 
 func (s *BackupService) restoreScriptsDir(r *zip.ReadCloser) {
 	scriptsDir := constant.ScriptsWorkDir
