@@ -371,13 +371,13 @@ func (es *ExecutorService) Stop() {
 func (es *ExecutorService) StartCron() {
 	es.loadCronTasks()
 	es.cronManager.Start()
-	logger.Info("[Executor] 计划任务管理器已启动")
+	// logger.Info("[Executor] 计划任务管理器已启动")
 }
 
 // StopCron 停止计划任务
 func (es *ExecutorService) StopCron() {
 	es.cronManager.Stop()
-	logger.Info("[Executor] 计划任务管理器已停止")
+	// logger.Info("[Executor] 计划任务管理器已停止")
 }
 
 // AddCronTask 添加计划任务

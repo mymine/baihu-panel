@@ -66,6 +66,13 @@ const concurrencyEnabled = computed({
   }
 })
 
+const isSingleFile = computed({
+  get: () => !!repoConfig.value.single_file,
+  set: (val: boolean) => {
+    repoConfig.value.single_file = val
+  }
+})
+
 const cleanConfig = computed(() => {
   if (!cleanType.value || cleanType.value === 'none' || cleanKeep.value <= 0) return ''
   return JSON.stringify({ type: cleanType.value, keep: cleanKeep.value })
@@ -217,9 +224,13 @@ async function save() {
         </div>
         <div v-if="repoConfig.source_type === 'git' && repoConfig.sparse_path" class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">单文件</Label>
-          <div class="sm:col-span-3 flex items-center gap-2">
-            <Checkbox :checked="repoConfig.single_file" @update:checked="(v: boolean) => repoConfig.single_file = v" />
-            <span class="text-xs text-muted-foreground">直接下载文件（适用于单个文件同步）</span>
+          <div class="sm:col-span-3">
+            <div class="flex items-center gap-3">
+              <Checkbox id="single-file-sync" v-model="isSingleFile" />
+              <Label for="single-file-sync" class="text-xs text-muted-foreground font-normal cursor-pointer">
+                直接下载文件（适用于单个文件同步）
+              </Label>
+            </div>
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
@@ -244,7 +255,7 @@ async function save() {
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">并发控制</Label>
           <div class="sm:col-span-3 flex items-center gap-2">
-            <Switch v-model:checked="concurrencyEnabled" />
+            <Switch v-model="concurrencyEnabled" />
             <span class="text-sm text-muted-foreground">允许并发</span>
             <span class="text-xs text-muted-foreground ml-2">(如果任务未执行完成，是否允许再次执行)</span>
           </div>
