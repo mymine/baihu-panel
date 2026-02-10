@@ -8,6 +8,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/engigu/baihu-panel/internal/constant"
 )
 
 // safeBuffer 一个线程安全的字节缓冲区，用于合并 stdout 和 stderr
@@ -49,12 +51,12 @@ const (
 type TaskStatus string
 
 const (
-	TaskStatusPending   TaskStatus = "pending"   // 等待中
-	TaskStatusRunning   TaskStatus = "running"   // 运行中
-	TaskStatusSuccess   TaskStatus = "success"   // 成功
-	TaskStatusFailed    TaskStatus = "failed"    // 失败
-	TaskStatusTimeout   TaskStatus = "timeout"   // 超时
-	TaskStatusCancelled TaskStatus = "cancelled" // 已取消
+	TaskStatusPending   TaskStatus = TaskStatus(constant.TaskStatusPending)   // 等待中
+	TaskStatusRunning   TaskStatus = TaskStatus(constant.TaskStatusRunning)   // 运行中
+	TaskStatusSuccess   TaskStatus = TaskStatus(constant.TaskStatusSuccess)   // 成功
+	TaskStatusFailed    TaskStatus = TaskStatus(constant.TaskStatusFailed)    // 失败
+	TaskStatusTimeout   TaskStatus = TaskStatus(constant.TaskStatusTimeout)   // 超时
+	TaskStatusCancelled TaskStatus = TaskStatus(constant.TaskStatusCancelled) // 已取消
 )
 
 // ExecutionRequest 执行请求（标准接口）
@@ -329,7 +331,7 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 			return &ExecutionResult{
 				TaskID:    req.TaskID,
 				Success:   false,
-				Status:    "failed",
+				Status:    constant.TaskStatusFailed,
 				Error:     err.Error(),
 				Duration:  0,
 				ExitCode:  1,
@@ -402,7 +404,7 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 	}
 
 	if execResult != nil {
-		result.Success = execResult.Status == "success"
+		result.Success = execResult.Status == constant.TaskStatusSuccess
 		result.Output = combinedBuf.String()
 		result.Status = execResult.Status
 		result.Duration = execResult.Duration
@@ -411,7 +413,7 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 		result.EndTime = execResult.EndTime
 	} else {
 		result.Success = false
-		result.Status = "failed"
+		result.Status = constant.TaskStatusFailed
 		result.StartTime = start
 		result.EndTime = time.Now()
 		result.Duration = result.EndTime.Sub(result.StartTime).Milliseconds()
@@ -421,9 +423,9 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 	if execErr != nil {
 		result.Error = execErr.Error()
 		if ctx.Err() == context.Canceled {
-			result.Status = "cancelled"
+			result.Status = constant.TaskStatusCancelled
 		} else if ctx.Err() == context.DeadlineExceeded {
-			result.Status = "timeout"
+			result.Status = constant.TaskStatusTimeout
 		}
 	}
 

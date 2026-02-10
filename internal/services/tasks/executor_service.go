@@ -134,7 +134,7 @@ func (h *ServerSchedulerHandler) OnTaskExecuting(req *executor.ExecutionRequest)
 	goid, err := h.es.AddRunningGo(task.ID)
 	if err != nil {
 		// 并发限制，更新日志状态为失败
-		taskLog.Status = "failed"
+		taskLog.Status = constant.TaskStatusFailed
 		taskLog.Output, _ = utils.CompressToBase64("任务并发数限制，拒绝执行")
 		h.es.taskLogService.SaveTaskLog(taskLog)
 		return nil, nil, fmt.Errorf("任务并发限制: %v", err)
@@ -268,7 +268,7 @@ func (h *ServerSchedulerHandler) OnTaskFailed(req *executor.ExecutionRequest, er
 		Command:   req.Command,
 		Output:    output,
 		Error:     err.Error(),
-		Status:    "failed",
+		Status:    constant.TaskStatusFailed,
 		Duration:  0,
 		ExitCode:  1,
 		StartTime: &now,
@@ -330,7 +330,7 @@ func (es *ExecutorService) ExecuteDispatcher(ctx context.Context, req *executor.
 	}
 
 	// 特殊处理仓库同步任务
-	if task.Type == "repo" {
+	if task.Type == constant.TaskTypeRepo {
 		cmd, workDir := es.BuildRepoCommand(task)
 		if cmd != "" {
 			req.Command = cmd
@@ -475,7 +475,7 @@ func (es *ExecutorService) ExecuteTask(taskID int) *executor.ExecutionResult {
 	return &executor.ExecutionResult{
 		TaskID:    fmt.Sprintf("%d", task.ID),
 		Success:   true,
-		Status:    "queued",
+		Status:    constant.TaskStatusQueued,
 		StartTime: time.Now(),
 	}
 }
@@ -487,7 +487,7 @@ func (es *ExecutorService) StopTaskExecution(logID uint) error {
 		return fmt.Errorf("日志不存在")
 	}
 
-	if taskLog.Status != "running" {
+	if taskLog.Status != constant.TaskStatusRunning {
 		return fmt.Errorf("任务已结束")
 	}
 
@@ -692,7 +692,7 @@ func (es *ExecutorService) ExecuteRemoteForScheduler(task *models.Task, logID ui
 	case <-time.After(time.Duration(timeout) * time.Minute):
 		end := time.Now()
 		return &executor.Result{
-			Status:    "failed",
+			Status:    constant.TaskStatusFailed,
 			Error:     "等待 Agent 结果超时",
 			Duration:  end.Sub(start).Milliseconds(),
 			ExitCode:  -1,

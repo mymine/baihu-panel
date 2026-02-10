@@ -37,7 +37,7 @@ type Task struct {
 	ID          uint           `json:"id" gorm:"primaryKey"`
 	Name        string         `json:"name" gorm:"size:255;not null"`
 	Command     string         `json:"command" gorm:"type:text"`                // 普通任务的命令
-	Type        string         `json:"type" gorm:"size:20;default:'task'"`      // 任务类型: task(普通任务), repo(仓库同步)
+	Type        string         `json:"type" gorm:"size:20;default:'task'"`      // 任务类型: constant.TaskTypeNormal, constant.TaskTypeRepo
 	Config      string         `json:"config" gorm:"type:text"`                 // 配置 JSON（仓库同步配置等）
 	Schedule    string         `json:"schedule" gorm:"size:100"`                // cron expression
 	Timeout     int            `json:"timeout" gorm:"default:30"`               // 超时时间（分钟），默认30分钟
@@ -92,10 +92,10 @@ type TaskLog struct {
 	TaskID    uint       `json:"task_id" gorm:"index"`
 	AgentID   *uint      `json:"agent_id" gorm:"index"` // Agent ID，为空表示本地执行
 	Command   string     `json:"command" gorm:"type:text"`
-	Output    string     `json:"-" gorm:"type:longtext"` // gzip+base64 compressed
-	Error     string     `json:"error" gorm:"type:text"` // 额外的系统错误信息
-	Status    string     `json:"status" gorm:"size:20"`  // success, failed
-	Duration  int64      `json:"duration"`               // milliseconds
+	Output    string     `json:"-" gorm:"type:longtext"`      // gzip+base64 compressed
+	Error     string     `json:"error" gorm:"type:text"`      // 额外的系统错误信息
+	Status    string     `json:"status" gorm:"size:20;index"` // success, failed
+	Duration  int64      `json:"duration"`                    // milliseconds
 	ExitCode  int        `json:"exit_code"`
 	StartTime *LocalTime `json:"start_time"`
 	EndTime   *LocalTime `json:"end_time"`

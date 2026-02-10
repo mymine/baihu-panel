@@ -111,7 +111,7 @@ func (dc *DashboardController) GetSendStats(c *gin.Context) {
 		}
 		ds := dayMap[s.Day]
 		ds.Total += s.Num
-		if s.Status == "success" {
+		if s.Status == constant.TaskStatusSuccess {
 			ds.Success += s.Num
 		} else {
 			ds.Failed += s.Num

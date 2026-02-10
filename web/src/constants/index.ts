@@ -17,3 +17,25 @@ export const FILE_RUNNERS: Record<string, string> = {
   sh: 'bash',
   bash: 'bash',
 } as const
+
+// 任务状态
+export const TASK_STATUS = {
+  SUCCESS: 'success',
+  FAILED: 'failed',
+  RUNNING: 'running',
+  PENDING: 'pending',
+  TIMEOUT: 'timeout',
+  CANCELLED: 'cancelled',
+} as const
+
+// 任务类型
+export const TASK_TYPE = {
+  NORMAL: 'task',
+  REPO: 'repo',
+} as const
+
+// Agent 状态
+export const AGENT_STATUS = {
+  ONLINE: 'online',
+  OFFLINE: 'offline',
+} as const

@@ -64,6 +64,23 @@ const (
 	WSTypeFetchTasks    = "fetch_tasks"
 	WSTypeTaskHeartbeat = "task_heartbeat"
 	WSTypeStop          = "stop"
+
+	// 任务状态
+	TaskStatusSuccess   = "success"
+	TaskStatusFailed    = "failed"
+	TaskStatusRunning   = "running"
+	TaskStatusPending   = "pending"
+	TaskStatusTimeout   = "timeout"
+	TaskStatusCancelled = "cancelled"
+	TaskStatusQueued    = "queued"
+
+	// 任务类型
+	TaskTypeNormal = "task"
+	TaskTypeRepo   = "repo"
+
+	// Agent 状态
+	AgentStatusOnline  = "online"
+	AgentStatusOffline = "offline"
 )
 
 // TablePrefix 表前缀，从配置文件读取

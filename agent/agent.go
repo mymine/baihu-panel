@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/engigu/baihu-panel/internal/constant"
 	"github.com/engigu/baihu-panel/internal/executor"
 	"github.com/engigu/baihu-panel/internal/logger"
 	"github.com/engigu/baihu-panel/internal/utils"
@@ -21,19 +22,19 @@ import (
 
 // WebSocket 消息类型
 const (
-	WSTypeHeartbeat     = "heartbeat"
-	WSTypeHeartbeatAck  = "heartbeat_ack"
-	WSTypeTasks         = "tasks"
-	WSTypeTaskResult    = "task_result"
-	WSTypeUpdate        = "update"
-	WSTypeConnected     = "connected"
-	WSTypeDisabled      = "disabled"
-	WSTypeEnabled       = "enabled"
-	WSTypeFetchTasks    = "fetch_tasks"
-	WSTypeTaskLog       = "task_log"
-	WSTypeExecute       = "execute"
-	WSTypeTaskHeartbeat = "task_heartbeat"
-	WSTypeStop          = "stop"
+	WSTypeHeartbeat     = constant.WSTypeHeartbeat
+	WSTypeHeartbeatAck  = constant.WSTypeHeartbeatAck
+	WSTypeTasks         = constant.WSTypeTasks
+	WSTypeTaskResult    = constant.WSTypeTaskResult
+	WSTypeUpdate        = constant.WSTypeUpdate
+	WSTypeConnected     = constant.WSTypeConnected
+	WSTypeDisabled      = constant.WSTypeDisabled
+	WSTypeEnabled       = constant.WSTypeEnabled
+	WSTypeFetchTasks    = constant.WSTypeFetchTasks
+	WSTypeTaskLog       = constant.WSTypeTaskLog
+	WSTypeExecute       = constant.WSTypeExecute
+	WSTypeTaskHeartbeat = constant.WSTypeTaskHeartbeat
+	WSTypeStop          = constant.WSTypeStop
 )
 
 type WSMessage struct {
@@ -193,7 +194,7 @@ func (h *AgentHandler) OnTaskCompleted(req *executor.ExecutionRequest, result *e
 		EndTime:   result.EndTime.Unix(),
 	})
 
-	if result.Status == "failed" {
+	if result.Status == constant.TaskStatusFailed {
 		h.agent.printLastLogs(result.LogID)
 	}
 	h.agent.clearTaskLog(result.LogID)
@@ -216,7 +217,7 @@ func (h *AgentHandler) OnTaskFailed(req *executor.ExecutionRequest, err error) {
 		Command:   req.Command,
 		Output:    "",
 		Error:     err.Error(),
-		Status:    "failed",
+		Status:    constant.TaskStatusFailed,
 		Duration:  0,
 		ExitCode:  1,
 		StartTime: time.Now().Unix(),

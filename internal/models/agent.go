@@ -9,20 +9,20 @@ import (
 // Agent 远程执行代理
 type Agent struct {
 	ID          uint           `json:"id" gorm:"primaryKey"`
-	Name        string         `json:"name" gorm:"size:100;not null"`           // Agent 名称
-	Token       string         `json:"token" gorm:"size:64;index"`              // 认证 Token（可重复使用）
-	MachineID   string         `json:"machine_id" gorm:"size:64;uniqueIndex"`   // 机器识别码（唯一）
-	Description string         `json:"description" gorm:"size:255"`             // 描述
-	Status      string         `json:"status" gorm:"size:20;default:'pending'"` // 状态: pending(待审核), online, offline, blocked(拉黑)
-	LastSeen    *LocalTime     `json:"last_seen"`                               // 最后心跳时间
-	IP          string         `json:"ip" gorm:"size:45"`                       // Agent IP 地址
-	Version     string         `json:"version" gorm:"size:50"`                  // Agent 版本
-	BuildTime   string         `json:"build_time" gorm:"size:30"`               // Agent 构建时间
-	Hostname    string         `json:"hostname" gorm:"size:100"`                // Agent 主机名
-	OS          string         `json:"os" gorm:"size:20"`                       // 操作系统
-	Arch        string         `json:"arch" gorm:"size:20"`                     // 架构
-	ForceUpdate bool           `json:"force_update" gorm:"default:false"`       // 强制更新标志
-	Enabled     bool           `json:"enabled" gorm:"default:true"`             // 是否启用
+	Name        string         `json:"name" gorm:"size:100;not null"`                 // Agent 名称
+	Token       string         `json:"token" gorm:"size:64;index"`                    // 认证 Token（可重复使用）
+	MachineID   string         `json:"machine_id" gorm:"size:64;uniqueIndex"`         // 机器识别码（唯一）
+	Description string         `json:"description" gorm:"size:255"`                   // 描述
+	Status      string         `json:"status" gorm:"size:20;default:'pending';index"` // 状态: constant.AgentStatusOnline, constant.AgentStatusOffline
+	LastSeen    *LocalTime     `json:"last_seen"`                                     // 最后心跳时间
+	IP          string         `json:"ip" gorm:"size:45"`                             // Agent IP 地址
+	Version     string         `json:"version" gorm:"size:50"`                        // Agent 版本
+	BuildTime   string         `json:"build_time" gorm:"size:30"`                     // Agent 构建时间
+	Hostname    string         `json:"hostname" gorm:"size:100"`                      // Agent 主机名
+	OS          string         `json:"os" gorm:"size:20"`                             // 操作系统
+	Arch        string         `json:"arch" gorm:"size:20"`                           // 架构
+	ForceUpdate bool           `json:"force_update" gorm:"default:false"`             // 强制更新标志
+	Enabled     bool           `json:"enabled" gorm:"default:true"`                   // 是否启用
 	CreatedAt   LocalTime      `json:"created_at"`
 	UpdatedAt   LocalTime      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/creack/pty"
+	"github.com/engigu/baihu-panel/internal/constant"
 	"github.com/engigu/baihu-panel/internal/logger"
 	"github.com/engigu/baihu-panel/internal/utils"
 )
@@ -76,7 +77,7 @@ func ExecuteWithHooks(ctx context.Context, req Request, stdout, stderr io.Writer
 		id, err := hooks.PreExecute(ctx, req)
 		if err != nil {
 			return &Result{
-				Status:    "failed",
+				Status:    constant.TaskStatusFailed,
 				Duration:  0,
 				ExitCode:  1,
 				StartTime: start,
@@ -185,7 +186,7 @@ func ExecuteWithHooks(ctx context.Context, req Request, stdout, stderr io.Writer
 			// Start 失败的处理
 			end := time.Now()
 			result := &Result{
-				Status:    "failed",
+				Status:    constant.TaskStatusFailed,
 				Duration:  end.Sub(start).Milliseconds(),
 				ExitCode:  1,
 				StartTime: start, // 修正为 start
@@ -248,7 +249,7 @@ func ExecuteWithHooks(ctx context.Context, req Request, stdout, stderr io.Writer
 	}
 
 	if err != nil {
-		result.Status = "failed"
+		result.Status = constant.TaskStatusFailed
 		result.Error = err.Error()
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			result.ExitCode = exitErr.ExitCode()
@@ -256,7 +257,7 @@ func ExecuteWithHooks(ctx context.Context, req Request, stdout, stderr io.Writer
 			result.ExitCode = 1
 		}
 	} else {
-		result.Status = "success"
+		result.Status = constant.TaskStatusSuccess
 		result.ExitCode = 0
 	}
 

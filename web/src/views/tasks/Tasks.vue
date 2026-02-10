@@ -11,6 +11,7 @@ import { api, type Task, type Agent } from '@/api'
 import { toast } from 'vue-sonner'
 import { useSiteSettings } from '@/composables/useSiteSettings'
 import { useRouter, useRoute } from 'vue-router'
+import { TASK_TYPE, AGENT_STATUS } from '@/constants'
 import TextOverflow from '@/components/TextOverflow.vue'
 
 const router = useRouter()
@@ -57,7 +58,7 @@ function getExecutorName(task: Task): string {
 function getExecutorStatus(task: Task): 'local' | 'online' | 'offline' {
   if (!task.agent_id) return 'local'
   const agent = agentMap.value[task.agent_id]
-  return agent?.status === 'online' ? 'online' : 'offline'
+  return agent?.status === AGENT_STATUS.ONLINE ? 'online' : 'offline'
 }
 
 async function loadTasks() {
@@ -100,13 +101,13 @@ function clearAgentFilter() {
 }
 
 function openCreate() {
-  editingTask.value = { name: '', command: '', type: 'task', schedule: '0 * * * * *', timeout: 30, work_dir: '', enabled: true, clean_config: '', envs: '' }
+  editingTask.value = { name: '', command: '', type: TASK_TYPE.NORMAL, schedule: '0 * * * * *', timeout: 30, work_dir: '', enabled: true, clean_config: '', envs: '' }
   isEdit.value = false
   showTaskDialog.value = true
 }
 
 function openCreateRepo() {
-  editingTask.value = { name: '', type: 'repo', schedule: '0 0 0 * * *', timeout: 30, enabled: true, clean_config: '', envs: '' }
+  editingTask.value = { name: '', type: TASK_TYPE.REPO, schedule: '0 0 0 * * *', timeout: 30, enabled: true, clean_config: '', envs: '' }
   isEdit.value = false
   showRepoDialog.value = true
 }
@@ -114,7 +115,7 @@ function openCreateRepo() {
 function openEdit(task: Task) {
   editingTask.value = { ...task }
   isEdit.value = true
-  if (task.type === 'repo') {
+  if (task.type === TASK_TYPE.REPO) {
     showRepoDialog.value = true
   } else {
     showTaskDialog.value = true
@@ -168,7 +169,7 @@ function viewLogs(taskId: number) {
 }
 
 function getTaskTypeTitle(type: string) {
-  return type === 'repo' ? '仓库同步' : '普通任务'
+  return type === TASK_TYPE.REPO ? '仓库同步' : '普通任务'
 }
 
 onMounted(async () => {
@@ -244,7 +245,7 @@ watch(() => route.query.agent_id, (newVal) => {
           class="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 hover:bg-muted/50 transition-colors">
           <span class="w-12 sm:w-14 shrink-0 text-muted-foreground text-xs sm:text-sm">#{{ task.id }}</span>
           <span class="w-6 sm:w-8 shrink-0 flex justify-center" :title="getTaskTypeTitle(task.type || 'task')">
-            <GitBranch v-if="task.type === 'repo'" class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+            <GitBranch v-if="task.type === TASK_TYPE.REPO" class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
             <Terminal v-else class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
           </span>
           <span class="flex-1 min-w-0 font-medium truncate text-xs sm:text-sm">{{ task.name }}</span>
@@ -258,7 +259,7 @@ watch(() => route.query.agent_id, (newVal) => {
           </span>
           <code
             class="w-32 sm:flex-1 shrink-0 sm:shrink text-muted-foreground truncate text-xs bg-muted px-2 py-1 rounded hidden sm:block">
-  <TextOverflow :text="task.command" :title="task.type === 'repo' ? '同步地址' : '执行命令'" />
+  <TextOverflow :text="task.command" :title="task.type === TASK_TYPE.REPO ? '同步地址' : '执行命令'" />
 </code>
           <code class="w-36 shrink-0 text-muted-foreground text-xs bg-muted px-2 py-1 rounded hidden md:block">{{ task.schedule
           }}</code>

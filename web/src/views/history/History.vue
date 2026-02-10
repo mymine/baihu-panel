@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
+import { TASK_STATUS, TASK_TYPE } from '@/constants'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/Pagination.vue'
@@ -84,7 +85,7 @@ async function selectLog(log: TaskLog) {
   selectedLog.value = log
 
   // 如果是运行中状态，启动定时器轮询最新日志信息（主要是更新耗时）
-  if (log.status === 'running') {
+  if (log.status === TASK_STATUS.RUNNING) {
     const updateLog = async () => {
       try {
         const res = await api.logs.get(log.id)
@@ -97,7 +98,7 @@ async function selectLog(log: TaskLog) {
             listItem.duration = res.duration
           }
           // 如果状态变了，更新状态并停止轮询
-          if (res.status !== 'running') {
+          if (res.status !== TASK_STATUS.RUNNING) {
             selectedLog.value.status = res.status
             selectedLog.value.end_time = res.end_time
             if (listItem) {
@@ -133,7 +134,7 @@ async function selectLog(log: TaskLog) {
 
   logSocket.onmessage = (event) => {
     isWsLoading.value = false
-    if (log.status !== 'running') {
+    if (log.status !== TASK_STATUS.RUNNING) {
       wsContent.value = event.data
     } else {
       wsContent.value += event.data
@@ -192,7 +193,7 @@ function formatDuration(ms: number): string {
 }
 
 function getTaskTypeTitle(type: string) {
-  return type === 'repo' ? '仓库同步' : '普通任务'
+  return type === TASK_TYPE.REPO ? '仓库同步' : '普通任务'
 }
 
 onMounted(() => {
@@ -267,32 +268,32 @@ watch(() => route.query.task_id, (newTaskId) => {
             <div class="flex sm:hidden items-center gap-2 px-3 py-2">
               <span class="w-14 shrink-0 text-muted-foreground text-xs">#{{ log.id }}</span>
               <span class="w-6 shrink-0 flex justify-center" :title="getTaskTypeTitle(log.task_type || 'task')">
-                <GitBranch v-if="log.task_type === 'repo'" class="h-3.5 w-3.5 text-primary" />
+                <GitBranch v-if="log.task_type === TASK_TYPE.REPO" class="h-3.5 w-3.5 text-primary" />
                 <Terminal v-else class="h-3.5 w-3.5 text-primary" />
               </span>
               <span class="flex-1 min-w-0 font-medium truncate text-xs">{{ log.task_name }}</span>
               <span class="w-8 flex justify-center shrink-0">
-                <div v-if="log.status === 'success'"
+                <div v-if="log.status === TASK_STATUS.SUCCESS"
                   class="h-5 w-5 rounded-full bg-green-500/10 flex items-center justify-center">
                   <Check class="h-3 w-3 text-green-500 stroke-[3]" />
                 </div>
-                <div v-else-if="log.status === 'failed'"
+                <div v-else-if="log.status === TASK_STATUS.FAILED"
                   class="h-5 w-5 rounded-full bg-red-500/10 flex items-center justify-center">
                   <X class="h-3 w-3 text-red-500 stroke-[3]" />
                 </div>
-                <div v-else-if="log.status === 'running'"
+                <div v-else-if="log.status === TASK_STATUS.RUNNING"
                   class="h-5 w-5 rounded-full bg-yellow-500/10 flex items-center justify-center">
                   <Zap class="h-3 w-3 text-yellow-500 fill-yellow-500 animate-pulse" />
                 </div>
-                <div v-else-if="log.status === 'pending'"
+                <div v-else-if="log.status === TASK_STATUS.PENDING"
                   class="h-5 w-5 rounded-full bg-yellow-500/10 flex items-center justify-center">
                   <Clock class="h-3 w-3 text-yellow-500" />
                 </div>
-                <div v-else-if="log.status === 'timeout'"
+                <div v-else-if="log.status === TASK_STATUS.TIMEOUT"
                   class="h-5 w-5 rounded-full bg-orange-500/10 flex items-center justify-center">
                   <AlertCircle class="h-3 w-3 text-orange-500" />
                 </div>
-                <div v-else-if="log.status === 'cancelled'"
+                <div v-else-if="log.status === TASK_STATUS.CANCELLED"
                   class="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
                   <Ban class="h-3 w-3 text-muted-foreground" />
                 </div>
@@ -304,7 +305,7 @@ watch(() => route.query.task_id, (newTaskId) => {
             <div class="hidden sm:flex items-center gap-4 px-4 py-2">
               <span class="w-16 shrink-0 text-muted-foreground text-sm">#{{ log.id }}</span>
               <span class="w-10 shrink-0 flex justify-center" :title="getTaskTypeTitle(log.task_type || 'task')">
-                <GitBranch v-if="log.task_type === 'repo'" class="h-4 w-4 text-primary" />
+                <GitBranch v-if="log.task_type === TASK_TYPE.REPO" class="h-4 w-4 text-primary" />
                 <Terminal v-else class="h-4 w-4 text-primary" />
               </span>
               <span class="w-36 shrink-0 font-medium truncate text-sm">{{ log.task_name }}</span>
@@ -312,27 +313,27 @@ watch(() => route.query.task_id, (newTaskId) => {
                 <TextOverflow :text="log.command" title="执行命令" />
               </code>
               <span class="w-12 flex justify-center shrink-0">
-                <div v-if="log.status === 'success'"
+                <div v-if="log.status === TASK_STATUS.SUCCESS"
                   class="h-6 w-6 rounded-full bg-green-500/10 flex items-center justify-center">
                   <Check class="h-3.5 w-3.5 text-green-500 stroke-[3]" />
                 </div>
-                <div v-else-if="log.status === 'failed'"
+                <div v-else-if="log.status === TASK_STATUS.FAILED"
                   class="h-6 w-6 rounded-full bg-red-500/10 flex items-center justify-center">
                   <X class="h-3.5 w-3.5 text-red-500 stroke-[3]" />
                 </div>
-                <div v-else-if="log.status === 'running'"
+                <div v-else-if="log.status === TASK_STATUS.RUNNING"
                   class="h-6 w-6 rounded-full bg-yellow-500/10 flex items-center justify-center">
                   <Zap class="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 animate-pulse" />
                 </div>
-                <div v-else-if="log.status === 'pending'"
+                <div v-else-if="log.status === TASK_STATUS.PENDING"
                   class="h-6 w-6 rounded-full bg-yellow-500/10 flex items-center justify-center">
                   <Clock class="h-3.5 w-3.5 text-yellow-500" />
                 </div>
-                <div v-else-if="log.status === 'timeout'"
+                <div v-else-if="log.status === TASK_STATUS.TIMEOUT"
                   class="h-6 w-6 rounded-full bg-orange-500/10 flex items-center justify-center">
                   <AlertCircle class="h-3.5 w-3.5 text-orange-500" />
                 </div>
-                <div v-else-if="log.status === 'cancelled'"
+                <div v-else-if="log.status === TASK_STATUS.CANCELLED"
                   class="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
                   <Ban class="h-3.5 w-3.5 text-muted-foreground" />
                 </div>
@@ -355,8 +356,8 @@ watch(() => route.query.task_id, (newTaskId) => {
         <div class="flex items-center justify-between px-4 py-3 border-b">
           <div class="flex items-center gap-2">
             <span class="text-sm font-medium">日志详情</span>
-            <Button v-if="selectedLog.status === 'running'" variant="destructive" size="sm" class="h-6 px-2 text-[10px]"
-              :disabled="isStopping" @click="stopTask">
+            <Button v-if="selectedLog.status === TASK_STATUS.RUNNING" variant="destructive" size="sm"
+              class="h-6 px-2 text-[10px]" :disabled="isStopping" @click="stopTask">
               {{ isStopping ? '停止中...' : '停止任务' }}
             </Button>
           </div>
@@ -372,15 +373,16 @@ watch(() => route.query.task_id, (newTaskId) => {
           <div class="flex justify-between items-center">
             <span class="text-muted-foreground">状态</span>
             <Badge
-              :variant="selectedLog.status === 'success' ? 'default' : selectedLog.status === 'failed' ? 'destructive' : 'secondary'"
+              :variant="selectedLog.status === TASK_STATUS.SUCCESS ? 'default' : selectedLog.status === TASK_STATUS.FAILED ? 'destructive' : 'secondary'"
               class="capitalize px-4 py-0.5">
               <div class="flex items-center gap-1.5">
-                <CheckCircle2 v-if="selectedLog.status === 'success'" class="h-3 w-3" />
-                <XCircle v-else-if="selectedLog.status === 'failed'" class="h-3 w-3" />
-                <Zap v-else-if="selectedLog.status === 'running'" class="h-3 w-3 fill-current animate-pulse" />
-                <Clock v-else-if="selectedLog.status === 'pending'" class="h-3 w-3" />
-                <AlertCircle v-else-if="selectedLog.status === 'timeout'" class="h-3 w-3" />
-                <Ban v-else-if="selectedLog.status === 'cancelled'" class="h-3 w-3" />
+                <CheckCircle2 v-if="selectedLog.status === TASK_STATUS.SUCCESS" class="h-3 w-3" />
+                <XCircle v-else-if="selectedLog.status === TASK_STATUS.FAILED" class="h-3 w-3" />
+                <Zap v-else-if="selectedLog.status === TASK_STATUS.RUNNING"
+                  class="h-3 w-3 fill-current animate-pulse" />
+                <Clock v-else-if="selectedLog.status === TASK_STATUS.PENDING" class="h-3 w-3" />
+                <AlertCircle v-else-if="selectedLog.status === TASK_STATUS.TIMEOUT" class="h-3 w-3" />
+                <Ban v-else-if="selectedLog.status === TASK_STATUS.CANCELLED" class="h-3 w-3" />
                 {{ selectedLog.status }}
               </div>
             </Badge>

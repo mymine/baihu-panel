@@ -10,6 +10,7 @@ import { RefreshCw, Trash2, Edit, Copy, Server, Search, Download, RotateCw, Plus
 import { api, type Agent, type AgentToken } from '@/api'
 import { toast } from 'vue-sonner'
 import { useRouter } from 'vue-router'
+import { AGENT_STATUS } from '@/constants'
 
 const router = useRouter()
 
@@ -43,11 +44,7 @@ const filteredAgents = computed(() => {
 })
 
 function isOnline(agent: Agent): boolean {
-  if (!agent.last_seen) return false
-  const lastSeen = new Date(agent.last_seen)
-  const now = new Date()
-  const diffMs = now.getTime() - lastSeen.getTime()
-  return diffMs < 2 * 60 * 1000
+  return agent.status === AGENT_STATUS.ONLINE
 }
 
 async function loadAgents() {
@@ -326,7 +323,7 @@ onUnmounted(() => {
                 class="w-24 sm:w-32 shrink-0 font-medium text-xs sm:text-sm truncate cursor-pointer hover:text-primary"
                 @click="viewDetail(agent)" :title="agent.name">{{ agent.name }}</span>
               <span class="w-24 sm:w-28 shrink-0 text-xs sm:text-sm text-muted-foreground truncate">{{ agent.ip || '-'
-              }}</span>
+                }}</span>
               <span class="w-20 sm:w-32 shrink-0 text-xs sm:text-sm text-muted-foreground truncate hidden md:block">{{
                 agent.hostname || '-' }}</span>
               <span class="w-20 sm:w-36 shrink-0 text-xs sm:text-sm text-muted-foreground truncate hidden lg:block">{{

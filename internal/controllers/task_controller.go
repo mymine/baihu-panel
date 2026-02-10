@@ -69,7 +69,7 @@ func (tc *TaskController) CreateTask(c *gin.Context) {
 	}
 
 	// 普通任务需要命令
-	if req.Type != "repo" && req.Command == "" {
+	if req.Type != constant.TaskTypeRepo && req.Command == "" {
 		utils.BadRequest(c, "命令不能为空")
 		return
 	}

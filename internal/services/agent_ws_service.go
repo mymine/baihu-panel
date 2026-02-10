@@ -292,7 +292,7 @@ func (m *AgentWSManager) cleanupLoop() {
 					conn.Close()
 					delete(m.connections, agentID)
 					// 更新数据库状态
-					database.DB.Model(&models.Agent{}).Where("id = ?", agentID).Update("status", "offline")
+					database.DB.Model(&models.Agent{}).Where("id = ?", agentID).Update("status", constant.AgentStatusOffline)
 					logger.Infof("[AgentWS] Agent #%d 心跳超时，已断开", agentID)
 				}
 			}
@@ -301,8 +301,8 @@ func (m *AgentWSManager) cleanupLoop() {
 			// 有些 Agent 虽然没有连接，但数据库状态可能是 "online"
 			cutoff := now.Add(-2 * time.Minute)
 			database.DB.Model(&models.Agent{}).
-				Where("status = ? AND last_seen < ?", "online", cutoff).
-				Update("status", "offline")
+				Where("status = ? AND last_seen < ?", constant.AgentStatusOnline, cutoff).
+				Update("status", constant.AgentStatusOffline)
 
 			// 清理过期的限流记录（超过 10 分钟未活动）
 

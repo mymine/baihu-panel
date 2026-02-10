@@ -122,7 +122,7 @@ func (s *AgentService) RegisterByToken(token string, machineID string, ip string
 			database.DB.Model(&existing).Updates(map[string]interface{}{
 				"token":     token,
 				"ip":        ip,
-				"status":    "online",
+				"status":    constant.AgentStatusOnline,
 				"last_seen": now,
 			})
 			s.UseToken(agentToken.ID)
@@ -138,7 +138,7 @@ func (s *AgentService) RegisterByToken(token string, machineID string, ip string
 		Token:     token,
 		MachineID: machineID,
 		IP:        ip,
-		Status:    "online",
+		Status:    constant.AgentStatusOnline,
 		LastSeen:  &now,
 		Enabled:   true,
 	}
@@ -179,7 +179,7 @@ func (s *AgentService) Register(req *models.AgentRegisterRequest, ip string) (*m
 		Version:   req.Version,
 		BuildTime: req.BuildTime,
 		IP:        ip,
-		Status:    "online",
+		Status:    constant.AgentStatusOnline,
 		LastSeen:  &now,
 		Enabled:   true,
 	}
@@ -288,7 +288,7 @@ func (s *AgentService) Heartbeat(token, ip, version, buildTime, hostname, osType
 
 	database.DB.Model(&models.Agent{}).Where("id = ?", agent.ID).Updates(updates)
 
-	agent.Status = "online"
+	agent.Status = constant.AgentStatusOnline
 	agent.LastSeen = &now
 	agent.IP = ip
 	agent.Version = version
@@ -386,15 +386,15 @@ func (s *AgentService) UpdateTaskDuration(logID uint, duration int64) error {
 func (s *AgentService) UpdateOfflineAgents() {
 	cutoff := time.Now().Add(-2 * time.Minute)
 	database.DB.Model(&models.Agent{}).
-		Where("status = ? AND last_seen < ?", "online", cutoff).
-		Update("status", "offline")
+		Where("status = ? AND last_seen < ?", constant.AgentStatusOnline, cutoff).
+		Update("status", constant.AgentStatusOffline)
 }
 
 // ResetAllAgentsToOffline 将所有 Agents 状态重置为离线（用于服务启动时）
 func (s *AgentService) ResetAllAgentsToOffline() {
 	database.DB.Model(&models.Agent{}).
-		Where("status = ?", "online").
-		Update("status", "offline")
+		Where("status = ?", constant.AgentStatusOnline).
+		Update("status", constant.AgentStatusOffline)
 }
 
 // GetLatestVersion 获取最新 Agent 版本
