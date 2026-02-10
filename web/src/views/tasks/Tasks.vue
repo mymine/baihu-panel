@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import Pagination from '@/components/Pagination.vue'
 import TaskDialog from './TaskDialog.vue'
 import RepoDialog from './RepoDialog.vue'
-import { Plus, Play, Pencil, Trash2, Search, ScrollText, GitBranch, Terminal, Server, Monitor, X, Loader2 } from 'lucide-vue-next'
+import { Plus, Play, Pencil, Trash2, Search, ScrollText, GitBranch, Terminal, Server, Monitor, X, Loader2, Wifi, WifiOff, Zap, ZapOff } from 'lucide-vue-next'
 import { api, type Task, type Agent } from '@/api'
 import { toast } from 'vue-sonner'
 import { useSiteSettings } from '@/composables/useSiteSettings'
@@ -62,9 +62,9 @@ function getExecutorStatus(task: Task): 'local' | 'online' | 'offline' {
 
 async function loadTasks() {
   try {
-    const res = await api.tasks.list({ 
-      page: currentPage.value, 
-      page_size: pageSize.value, 
+    const res = await api.tasks.list({
+      page: currentPage.value,
+      page_size: pageSize.value,
       name: filterName.value || undefined,
       agent_id: filterAgentId.value || undefined
     })
@@ -174,13 +174,13 @@ function getTaskTypeTitle(type: string) {
 onMounted(async () => {
   // 先加载 agents，再处理 URL 参数
   await loadAgents()
-  
+
   // 从 URL 参数读取 agent_id
   const agentIdParam = route.query.agent_id
   if (agentIdParam) {
     filterAgentId.value = Number(agentIdParam)
   }
-  
+
   loadTasks()
 })
 
@@ -202,9 +202,11 @@ watch(() => route.query.agent_id, (newVal) => {
       <div class="flex items-center gap-2">
         <div class="relative flex-1 sm:flex-none">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input v-model="filterName" placeholder="搜索任务..." class="h-9 pl-9 w-full sm:w-56 text-sm" @input="handleSearch" />
+          <Input v-model="filterName" placeholder="搜索任务..." class="h-9 pl-9 w-full sm:w-56 text-sm"
+            @input="handleSearch" />
         </div>
-        <div v-if="filterAgentId" class="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-md text-sm">
+        <div v-if="filterAgentId"
+          class="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-md text-sm">
           <Server class="h-3.5 w-3.5" />
           <span>{{ filterAgentName }}</span>
           <X class="h-3.5 w-3.5 cursor-pointer hover:text-destructive" @click="clearAgentFilter" />
@@ -220,7 +222,8 @@ watch(() => route.query.agent_id, (newVal) => {
 
     <div class="rounded-lg border bg-card overflow-x-auto">
       <!-- 表头 -->
-      <div class="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 border-b bg-muted/50 text-xs sm:text-sm text-muted-foreground font-medium min-w-[360px] sm:min-w-[800px]">
+      <div
+        class="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 border-b bg-muted/50 text-xs sm:text-sm text-muted-foreground font-medium min-w-[360px] sm:min-w-[800px]">
         <span class="w-12 sm:w-14 shrink-0">ID</span>
         <span class="w-6 sm:w-8 shrink-0 text-center">类型</span>
         <span class="flex-1 min-w-0">名称</span>
@@ -237,11 +240,8 @@ watch(() => route.query.agent_id, (newVal) => {
         <div v-if="tasks.length === 0" class="text-sm text-muted-foreground text-center py-8">
           暂无任务
         </div>
-        <div
-          v-for="task in tasks"
-          :key="task.id"
-          class="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 hover:bg-muted/50 transition-colors"
-        >
+        <div v-for="task in tasks" :key="task.id"
+          class="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 hover:bg-muted/50 transition-colors">
           <span class="w-12 sm:w-14 shrink-0 text-muted-foreground text-xs sm:text-sm">#{{ task.id }}</span>
           <span class="w-6 sm:w-8 shrink-0 flex justify-center" :title="getTaskTypeTitle(task.type || 'task')">
             <GitBranch v-if="task.type === 'repo'" class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
@@ -250,23 +250,34 @@ watch(() => route.query.agent_id, (newVal) => {
           <span class="flex-1 min-w-0 font-medium truncate text-xs sm:text-sm">{{ task.name }}</span>
           <span class="w-20 shrink-0 hidden md:flex items-center gap-1 text-xs" :title="getExecutorName(task)">
             <Monitor v-if="!task.agent_id" class="h-3 w-3 text-muted-foreground" />
-            <Server v-else class="h-3 w-3" :class="getExecutorStatus(task) === 'online' ? 'text-green-500' : 'text-gray-400'" />
+            <template v-else>
+              <Wifi v-if="getExecutorStatus(task) === 'online'" class="h-3 w-3 text-green-500" />
+              <WifiOff v-else class="h-3 w-3 text-muted-foreground" />
+            </template>
             <span class="truncate">{{ getExecutorName(task) }}</span>
           </span>
-          <code class="w-32 sm:flex-1 shrink-0 sm:shrink text-muted-foreground truncate text-xs bg-muted px-2 py-1 rounded hidden sm:block">
-            <TextOverflow :text="task.command" :title="task.type === 'repo' ? '同步地址' : '执行命令'" />
-          </code>
-          <code class="w-36 shrink-0 text-muted-foreground text-xs bg-muted px-2 py-1 rounded hidden md:block">{{ task.schedule }}</code>
+          <code
+            class="w-32 sm:flex-1 shrink-0 sm:shrink text-muted-foreground truncate text-xs bg-muted px-2 py-1 rounded hidden sm:block">
+  <TextOverflow :text="task.command" :title="task.type === 'repo' ? '同步地址' : '执行命令'" />
+</code>
+          <code class="w-36 shrink-0 text-muted-foreground text-xs bg-muted px-2 py-1 rounded hidden md:block">{{ task.schedule
+          }}</code>
           <span class="w-40 shrink-0 text-muted-foreground text-xs hidden lg:block">{{ task.last_run || '-' }}</span>
           <span class="w-40 shrink-0 text-muted-foreground text-xs hidden lg:block">{{ task.next_run || '-' }}</span>
-          <span class="w-8 sm:w-12 flex justify-center shrink-0 cursor-pointer" @click="toggleTask(task, !task.enabled)" :title="task.enabled ? '点击禁用' : '点击启用'">
-            <span class="relative flex h-2.5 w-2.5">
-              <span v-if="task.enabled" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span :class="task.enabled ? 'bg-green-500' : 'bg-gray-400'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
-            </span>
+          <span class="w-8 sm:w-12 flex justify-center shrink-0 cursor-pointer group"
+            @click="toggleTask(task, !task.enabled)" :title="task.enabled ? '点击禁用' : '点击启用'">
+            <div v-if="task.enabled"
+              class="h-6 w-6 rounded-md bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
+              <Zap class="h-3.5 w-3.5 text-green-500 fill-green-500" />
+            </div>
+            <div v-else
+              class="h-6 w-6 rounded-md bg-muted flex items-center justify-center group-hover:bg-muted/80 transition-colors">
+              <ZapOff class="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
           </span>
           <span class="w-20 sm:w-36 shrink-0 flex justify-center gap-0.5 sm:gap-1">
-            <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7" @click="runTask(task.id)" title="执行" :disabled="executingTaskId === task.id">
+            <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7" @click="runTask(task.id)" title="执行"
+              :disabled="executingTaskId === task.id">
               <Loader2 v-if="executingTaskId === task.id" class="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
               <Play v-else class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
@@ -276,7 +287,8 @@ watch(() => route.query.agent_id, (newVal) => {
             <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7" @click="openEdit(task)" title="编辑">
               <Pencil class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7 text-destructive" @click="confirmDelete(task.id)" title="删除">
+            <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7 text-destructive"
+              @click="confirmDelete(task.id)" title="删除">
               <Trash2 class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             </Button>
           </span>
@@ -301,7 +313,8 @@ watch(() => route.query.agent_id, (newVal) => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction class="bg-destructive text-white hover:bg-destructive/90" @click="deleteTask">删除</AlertDialogAction>
+          <AlertDialogAction class="bg-destructive text-white hover:bg-destructive/90" @click="deleteTask">删除
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

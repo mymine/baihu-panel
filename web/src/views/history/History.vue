@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/Pagination.vue'
 import LogViewer from './LogViewer.vue'
-import { RefreshCw, X, Search, Maximize2, GitBranch, Terminal } from 'lucide-vue-next'
+import { RefreshCw, X, Search, Maximize2, GitBranch, Terminal, CheckCircle2, XCircle, AlertCircle, Ban, Clock, Zap, Check } from 'lucide-vue-next'
 import { api, type TaskLog } from '@/api'
+import { Badge } from '@/components/ui/badge'
 import { toast } from 'vue-sonner'
 import { useSiteSettings } from '@/composables/useSiteSettings'
 import TextOverflow from '@/components/TextOverflow.vue'
@@ -169,6 +170,21 @@ function closeDetail() {
   wsContent.value = ''
 }
 
+const isStopping = ref(false)
+async function stopTask() {
+  if (!selectedLog.value || isStopping.value) return
+
+  try {
+    isStopping.value = true
+    await api.tasks.stop(selectedLog.value.id)
+    toast.success('停止请求已发送')
+  } catch (err: any) {
+    toast.error(err.message || '停止失败')
+  } finally {
+    isStopping.value = false
+  }
+}
+
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}毫秒`
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}秒`
@@ -256,11 +272,30 @@ watch(() => route.query.task_id, (newTaskId) => {
               </span>
               <span class="flex-1 min-w-0 font-medium truncate text-xs">{{ log.task_name }}</span>
               <span class="w-8 flex justify-center shrink-0">
-                <span class="relative flex h-2.5 w-2.5">
-                  <span
-                    :class="log.status === 'success' ? 'bg-green-500' : log.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'"
-                    class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
-                </span>
+                <div v-if="log.status === 'success'"
+                  class="h-5 w-5 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Check class="h-3 w-3 text-green-500 stroke-[3]" />
+                </div>
+                <div v-else-if="log.status === 'failed'"
+                  class="h-5 w-5 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <X class="h-3 w-3 text-red-500 stroke-[3]" />
+                </div>
+                <div v-else-if="log.status === 'running'"
+                  class="h-5 w-5 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                  <Zap class="h-3 w-3 text-yellow-500 fill-yellow-500 animate-pulse" />
+                </div>
+                <div v-else-if="log.status === 'pending'"
+                  class="h-5 w-5 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                  <Clock class="h-3 w-3 text-yellow-500" />
+                </div>
+                <div v-else-if="log.status === 'timeout'"
+                  class="h-5 w-5 rounded-full bg-orange-500/10 flex items-center justify-center">
+                  <AlertCircle class="h-3 w-3 text-orange-500" />
+                </div>
+                <div v-else-if="log.status === 'cancelled'"
+                  class="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                  <Ban class="h-3 w-3 text-muted-foreground" />
+                </div>
               </span>
               <span class="w-12 text-right shrink-0 text-muted-foreground text-xs">{{ formatDuration(log.duration)
                 }}</span>
@@ -277,11 +312,30 @@ watch(() => route.query.task_id, (newTaskId) => {
                 <TextOverflow :text="log.command" title="执行命令" />
               </code>
               <span class="w-12 flex justify-center shrink-0">
-                <span class="relative flex h-2.5 w-2.5">
-                  <span
-                    :class="log.status === 'success' ? 'bg-green-500' : log.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'"
-                    class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
-                </span>
+                <div v-if="log.status === 'success'"
+                  class="h-6 w-6 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Check class="h-3.5 w-3.5 text-green-500 stroke-[3]" />
+                </div>
+                <div v-else-if="log.status === 'failed'"
+                  class="h-6 w-6 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <X class="h-3.5 w-3.5 text-red-500 stroke-[3]" />
+                </div>
+                <div v-else-if="log.status === 'running'"
+                  class="h-6 w-6 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                  <Zap class="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 animate-pulse" />
+                </div>
+                <div v-else-if="log.status === 'pending'"
+                  class="h-6 w-6 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                  <Clock class="h-3.5 w-3.5 text-yellow-500" />
+                </div>
+                <div v-else-if="log.status === 'timeout'"
+                  class="h-6 w-6 rounded-full bg-orange-500/10 flex items-center justify-center">
+                  <AlertCircle class="h-3.5 w-3.5 text-orange-500" />
+                </div>
+                <div v-else-if="log.status === 'cancelled'"
+                  class="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                  <Ban class="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
               </span>
               <span class="w-16 text-right shrink-0 text-muted-foreground text-xs">{{ formatDuration(log.duration)
                 }}</span>
@@ -299,7 +353,13 @@ watch(() => route.query.task_id, (newTaskId) => {
       <div v-if="selectedLog"
         class="w-full lg:w-[480px] rounded-lg border bg-card flex flex-col overflow-hidden shrink-0 max-h-[60vh] lg:max-h-[calc(100vh-180px)]">
         <div class="flex items-center justify-between px-4 py-3 border-b">
-          <span class="text-sm font-medium">日志详情</span>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium">日志详情</span>
+            <Button v-if="selectedLog.status === 'running'" variant="destructive" size="sm" class="h-6 px-2 text-[10px]"
+              :disabled="isStopping" @click="stopTask">
+              {{ isStopping ? '停止中...' : '停止任务' }}
+            </Button>
+          </div>
           <Button variant="ghost" size="icon" class="h-7 w-7" @click="closeDetail">
             <X class="h-3.5 w-3.5" />
           </Button>
@@ -311,14 +371,19 @@ watch(() => route.query.task_id, (newTaskId) => {
           </div>
           <div class="flex justify-between items-center">
             <span class="text-muted-foreground">状态</span>
-            <span class="flex items-center gap-1.5">
-              <span class="relative flex h-2.5 w-2.5">
-                <span
-                  :class="selectedLog.status === 'success' ? 'bg-green-500' : selectedLog.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'"
-                  class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
-              </span>
-              {{ selectedLog.status }}
-            </span>
+            <Badge
+              :variant="selectedLog.status === 'success' ? 'default' : selectedLog.status === 'failed' ? 'destructive' : 'secondary'"
+              class="capitalize px-4 py-0.5">
+              <div class="flex items-center gap-1.5">
+                <CheckCircle2 v-if="selectedLog.status === 'success'" class="h-3 w-3" />
+                <XCircle v-else-if="selectedLog.status === 'failed'" class="h-3 w-3" />
+                <Zap v-else-if="selectedLog.status === 'running'" class="h-3 w-3 fill-current animate-pulse" />
+                <Clock v-else-if="selectedLog.status === 'pending'" class="h-3 w-3" />
+                <AlertCircle v-else-if="selectedLog.status === 'timeout'" class="h-3 w-3" />
+                <Ban v-else-if="selectedLog.status === 'cancelled'" class="h-3 w-3" />
+                {{ selectedLog.status }}
+              </div>
+            </Badge>
           </div>
           <div class="flex justify-between">
             <span class="text-muted-foreground">耗时</span>

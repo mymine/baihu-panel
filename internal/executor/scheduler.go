@@ -170,7 +170,8 @@ type Scheduler struct {
 	wg           sync.WaitGroup
 	mu           sync.RWMutex
 	logger       SchedulerLogger
-	runningTasks map[string]context.CancelFunc // 记录运行中的任务，用于停止
+	runningTasks map[string]context.CancelFunc // 记录运行中的任务，用于停止 (TaskID -> CancelFunc)
+	runningExecs map[uint]context.CancelFunc   // 记录运行中的执行，用于停止 (LogID -> CancelFunc)
 }
 
 // NewScheduler 创建调度器
@@ -202,6 +203,7 @@ func NewScheduler(config SchedulerConfig, handler SchedulerEventHandler) *Schedu
 		stopCh:       make(chan struct{}),
 		logger:       &DefaultLogger{},
 		runningTasks: make(map[string]context.CancelFunc),
+		runningExecs: make(map[uint]context.CancelFunc),
 	}
 
 	return s
@@ -377,11 +379,17 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 	// 注册到运行中任务
 	s.mu.Lock()
 	s.runningTasks[req.TaskID] = cancel
+	if req.LogID > 0 {
+		s.runningExecs[req.LogID] = cancel
+	}
 	s.mu.Unlock()
 
 	defer func() {
 		s.mu.Lock()
 		delete(s.runningTasks, req.TaskID)
+		if req.LogID > 0 {
+			delete(s.runningExecs, req.LogID)
+		}
 		s.mu.Unlock()
 	}()
 
@@ -440,7 +448,7 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 	return result, execErr
 }
 
-// StopTask 停止正在运行的任务
+// StopTask 停止正在运行的任务（通过 TaskID，可能会停止多个并发副本）
 func (s *Scheduler) StopTask(taskID string) bool {
 	s.mu.RLock()
 	cancel, exists := s.runningTasks[taskID]
@@ -449,6 +457,20 @@ func (s *Scheduler) StopTask(taskID string) bool {
 	if exists && cancel != nil {
 		cancel()
 		s.logger.Infof("[Scheduler] 已尝试停止任务 %s", taskID)
+		return true
+	}
+	return false
+}
+
+// StopLog 停止正在运行的任务（通过 LogID，精确停止单个执行副本）
+func (s *Scheduler) StopLog(logID uint) bool {
+	s.mu.RLock()
+	cancel, exists := s.runningExecs[logID]
+	s.mu.RUnlock()
+
+	if exists && cancel != nil {
+		cancel()
+		s.logger.Infof("[Scheduler] 已尝试停止任务执行 #%d", logID)
 		return true
 	}
 	return false

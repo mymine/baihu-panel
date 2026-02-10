@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { RefreshCw, Trash2, Edit, Copy, Server, Search, Download, RotateCw, Plus, Ticket, Power, PowerOff, ListTodo, Eye } from 'lucide-vue-next'
+import { RefreshCw, Trash2, Edit, Copy, Server, Search, Download, RotateCw, Plus, Ticket, ListTodo, Eye, WifiOff, Zap, Check, X } from 'lucide-vue-next'
 import { api, type Agent, type AgentToken } from '@/api'
 import { toast } from 'vue-sonner'
 import { useRouter } from 'vue-router'
@@ -35,8 +35,8 @@ let refreshTimer: ReturnType<typeof setInterval> | null = null
 const filteredAgents = computed(() => {
   if (!searchQuery.value) return agents.value
   const q = searchQuery.value.toLowerCase()
-  return agents.value.filter(a => 
-    a.name.toLowerCase().includes(q) || 
+  return agents.value.filter(a =>
+    a.name.toLowerCase().includes(q) ||
     a.hostname?.toLowerCase().includes(q) ||
     a.ip?.toLowerCase().includes(q)
   )
@@ -226,7 +226,8 @@ onUnmounted(() => {
       <TabsContent value="agents" class="mt-4">
         <div class="rounded-lg border bg-card overflow-x-auto hide-scrollbar">
           <!-- 大屏表头 -->
-          <div class="hidden sm:flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 border-b bg-muted/50 text-xs sm:text-sm text-muted-foreground font-medium">
+          <div
+            class="hidden sm:flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 border-b bg-muted/50 text-xs sm:text-sm text-muted-foreground font-medium">
             <span class="w-10 sm:w-12 shrink-0">ID</span>
             <span class="w-6 shrink-0"></span>
             <span class="w-24 sm:w-32 shrink-0">名称</span>
@@ -243,21 +244,35 @@ onUnmounted(() => {
               {{ searchQuery ? '无匹配结果' : '暂无 Agent' }}
             </div>
             <!-- 小屏布局 -->
-            <div v-for="agent in filteredAgents" :key="agent.id" class="sm:hidden p-3 hover:bg-muted/50 transition-colors">
+            <div v-for="agent in filteredAgents" :key="agent.id"
+              class="sm:hidden p-3 hover:bg-muted/50 transition-colors">
               <div class="flex items-start justify-between mb-2">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
                   <span class="text-xs text-muted-foreground shrink-0">#{{ agent.id }}</span>
-                  <span class="relative flex h-2.5 w-2.5 shrink-0" :title="isOnline(agent) ? '在线' : '离线'">
-                    <span v-if="isOnline(agent)" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span :class="isOnline(agent) ? 'bg-green-500' : 'bg-gray-400'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
+                  <span class="flex items-center shrink-0" :title="isOnline(agent) ? '在线' : '离线'">
+                    <div v-if="isOnline(agent)"
+                      class="h-5 w-5 rounded-full bg-green-500/10 flex items-center justify-center">
+                      <Zap class="h-3 w-3 text-green-500 fill-green-500" />
+                    </div>
+                    <div v-else class="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                      <WifiOff class="h-3 w-3 text-muted-foreground" />
+                    </div>
                   </span>
-                  <span class="font-medium text-sm truncate cursor-pointer hover:text-primary" @click="viewDetail(agent)" :title="agent.name">{{ agent.name }}</span>
+                  <span class="font-medium text-sm truncate cursor-pointer hover:text-primary"
+                    @click="viewDetail(agent)" :title="agent.name">{{ agent.name }}</span>
                 </div>
-                <div class="flex items-center gap-0.5 shrink-0 ml-2">
-                  <Button variant="ghost" size="icon" class="h-7 w-7" @click="toggleEnabled(agent)" :title="agent.enabled ? '禁用' : '启用'">
-                    <Power v-if="agent.enabled" class="h-3.5 w-3.5 text-green-600" />
-                    <PowerOff v-else class="h-3.5 w-3.5 text-gray-400" />
-                  </Button>
+                <div class="flex items-center gap-2 shrink-0 ml-2">
+                  <span class="cursor-pointer group" @click="toggleEnabled(agent)"
+                    :title="agent.enabled ? '点击禁用' : '点击启用'">
+                    <div v-if="agent.enabled"
+                      class="h-6 w-6 rounded-md bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
+                      <Zap class="h-3.5 w-3.5 text-green-500 fill-green-500" />
+                    </div>
+                    <div v-else
+                      class="h-6 w-6 rounded-md bg-muted flex items-center justify-center group-hover:bg-muted/80 transition-colors">
+                      <ZapOff class="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                  </span>
                   <Button variant="ghost" size="icon" class="h-7 w-7" @click="viewDetail(agent)" title="详情">
                     <Eye class="h-3.5 w-3.5" />
                   </Button>
@@ -293,39 +308,60 @@ onUnmounted(() => {
               </div>
             </div>
             <!-- 大屏布局 -->
-            <div v-for="agent in filteredAgents" :key="`desktop-${agent.id}`" class="hidden sm:flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 hover:bg-muted/50 transition-colors">
+            <div v-for="agent in filteredAgents" :key="`desktop-${agent.id}`"
+              class="hidden sm:flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 hover:bg-muted/50 transition-colors">
               <span class="w-10 sm:w-12 shrink-0 text-muted-foreground text-xs sm:text-sm">#{{ agent.id }}</span>
               <span class="w-6 shrink-0 flex justify-center">
-                <span class="relative flex h-2.5 w-2.5" :title="isOnline(agent) ? '在线' : '离线'">
-                  <span v-if="isOnline(agent)" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span :class="isOnline(agent) ? 'bg-green-500' : 'bg-gray-400'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
+                <span class="flex justify-center shrink-0" :title="isOnline(agent) ? '在线' : '离线'">
+                  <div v-if="isOnline(agent)"
+                    class="h-6 w-6 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <Zap class="h-3.5 w-3.5 text-green-500 fill-green-500" />
+                  </div>
+                  <div v-else class="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                    <WifiOff class="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
                 </span>
               </span>
-              <span class="w-24 sm:w-32 shrink-0 font-medium text-xs sm:text-sm truncate cursor-pointer hover:text-primary" @click="viewDetail(agent)" :title="agent.name">{{ agent.name }}</span>
-              <span class="w-24 sm:w-28 shrink-0 text-xs sm:text-sm text-muted-foreground truncate">{{ agent.ip || '-' }}</span>
-              <span class="w-20 sm:w-32 shrink-0 text-xs sm:text-sm text-muted-foreground truncate hidden md:block">{{ agent.hostname || '-' }}</span>
-              <span class="w-20 sm:w-36 shrink-0 text-xs sm:text-sm text-muted-foreground truncate hidden lg:block">{{ agent.version || '-' }}</span>
-              <span class="w-40 shrink-0 text-xs sm:text-sm text-muted-foreground hidden xl:block">{{ agent.last_seen || '-' }}</span>
-              <span class="w-40 shrink-0 text-xs sm:text-sm text-muted-foreground hidden xl:block">{{ agent.created_at || '-' }}</span>
-              <span class="flex-1 flex justify-end gap-0.5 sm:gap-1">
-                <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7" @click="toggleEnabled(agent)" :title="agent.enabled ? '禁用' : '启用'">
-                  <Power v-if="agent.enabled" class="h-3 w-3 sm:h-3.5 sm:w-3.5 text-green-600" />
-                  <PowerOff v-else class="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400" />
+              <span
+                class="w-24 sm:w-32 shrink-0 font-medium text-xs sm:text-sm truncate cursor-pointer hover:text-primary"
+                @click="viewDetail(agent)" :title="agent.name">{{ agent.name }}</span>
+              <span class="w-24 sm:w-28 shrink-0 text-xs sm:text-sm text-muted-foreground truncate">{{ agent.ip || '-'
+              }}</span>
+              <span class="w-20 sm:w-32 shrink-0 text-xs sm:text-sm text-muted-foreground truncate hidden md:block">{{
+                agent.hostname || '-' }}</span>
+              <span class="w-20 sm:w-36 shrink-0 text-xs sm:text-sm text-muted-foreground truncate hidden lg:block">{{
+                agent.version || '-' }}</span>
+              <span class="w-40 shrink-0 text-xs sm:text-sm text-muted-foreground hidden xl:block">{{ agent.last_seen ||
+                '-' }}</span>
+              <span class="w-40 shrink-0 text-xs sm:text-sm text-muted-foreground hidden xl:block">{{ agent.created_at
+                || '-' }}</span>
+              <span class="flex-1 flex justify-end gap-2 items-center">
+                <span class="cursor-pointer group" @click="toggleEnabled(agent)"
+                  :title="agent.enabled ? '点击禁用' : '点击启用'">
+                  <div v-if="agent.enabled"
+                    class="h-6 w-6 rounded-md bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
+                    <Zap class="h-3.5 w-3.5 text-green-500 fill-green-500" />
+                  </div>
+                  <div v-else
+                    class="h-6 w-6 rounded-md bg-muted flex items-center justify-center group-hover:bg-muted/80 transition-colors">
+                    <ZapOff class="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                </span>
+                <Button variant="ghost" size="icon" class="h-7 w-7" @click="viewDetail(agent)" title="详情">
+                  <Eye class="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7" @click="viewDetail(agent)" title="详情">
-                  <Eye class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <Button variant="ghost" size="icon" class="h-7 w-7" @click="viewTasks(agent)" title="查看任务">
+                  <ListTodo class="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7" @click="viewTasks(agent)" title="查看任务">
-                  <ListTodo class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <Button variant="ghost" size="icon" class="h-7 w-7" @click="forceUpdate(agent)" title="强制更新">
+                  <RotateCw class="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7" @click="forceUpdate(agent)" title="强制更新">
-                  <RotateCw class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <Button variant="ghost" size="icon" class="h-7 w-7" @click="openEditDialog(agent)" title="编辑">
+                  <Edit class="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7" @click="openEditDialog(agent)" title="编辑">
-                  <Edit class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" class="h-6 w-6 sm:h-7 sm:w-7 text-destructive" @click="confirmDelete(agent)" title="删除">
-                  <Trash2 class="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                <Button variant="ghost" size="icon" class="h-7 w-7 text-destructive" @click="confirmDelete(agent)"
+                  title="删除">
+                  <Trash2 class="h-3.5 w-3.5" />
                 </Button>
               </span>
             </div>
@@ -335,7 +371,8 @@ onUnmounted(() => {
 
       <TabsContent value="regcodes" class="mt-4">
         <div class="rounded-lg border bg-card overflow-x-auto hide-scrollbar">
-          <div class="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 border-b bg-muted/50 text-xs sm:text-sm text-muted-foreground font-medium min-w-[500px]">
+          <div
+            class="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 border-b bg-muted/50 text-xs sm:text-sm text-muted-foreground font-medium min-w-[500px]">
             <span class="w-6 shrink-0"></span>
             <span class="flex-1 min-w-[200px]">令牌</span>
             <span class="w-24 sm:w-32 shrink-0">备注</span>
@@ -351,15 +388,21 @@ onUnmounted(() => {
             <div v-if="tokens.length === 0" class="text-center py-8 text-muted-foreground">
               <Ticket class="h-8 w-8 mx-auto mb-2 opacity-50" />暂无令牌
             </div>
-            <div v-for="token in tokens" :key="token.id" class="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 hover:bg-muted/50 transition-colors">
+            <div v-for="token in tokens" :key="token.id"
+              class="flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-2 hover:bg-muted/50 transition-colors">
               <span class="w-6 shrink-0 flex justify-center">
-                <span class="relative flex h-2.5 w-2.5">
-                  <span v-if="!isTokenExpired(token) && !isTokenExhausted(token)" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span :class="!isTokenExpired(token) && !isTokenExhausted(token) ? 'bg-green-500' : 'bg-gray-400'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
-                </span>
+                <div v-if="!isTokenExpired(token) && !isTokenExhausted(token)"
+                  class="h-5 w-5 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Check class="h-3 w-3 text-green-500 stroke-[3]" />
+                </div>
+                <div v-else class="h-5 w-5 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <X class="h-3 w-3 text-red-500 stroke-[3]" />
+                </div>
               </span>
-              <code class="flex-1 min-w-[200px] font-mono text-xs bg-muted px-2 py-0.5 rounded truncate">{{ token.token }}</code>
-              <span class="w-24 sm:w-32 shrink-0 text-xs sm:text-sm text-muted-foreground truncate">{{ token.remark || '-' }}</span>
+              <code
+                class="flex-1 min-w-[200px] font-mono text-xs bg-muted px-2 py-0.5 rounded truncate">{{ token.token }}</code>
+              <span class="w-24 sm:w-32 shrink-0 text-xs sm:text-sm text-muted-foreground truncate">{{ token.remark ||
+                '-' }}</span>
               <span class="w-16 sm:w-20 shrink-0 text-xs sm:text-sm text-muted-foreground text-center">
                 {{ token.used_count }}/{{ token.max_uses === 0 ? '∞' : token.max_uses }}
               </span>
@@ -370,7 +413,8 @@ onUnmounted(() => {
                 <Button variant="ghost" size="icon" class="h-7 w-7" @click="copyToken(token.token)" title="复制">
                   <Copy class="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" class="h-7 w-7 text-destructive" @click="deleteToken(token.id)" title="删除">
+                <Button variant="ghost" size="icon" class="h-7 w-7 text-destructive" @click="deleteToken(token.id)"
+                  title="删除">
                   <Trash2 class="h-3.5 w-3.5" />
                 </Button>
               </span>
@@ -423,10 +467,8 @@ onUnmounted(() => {
             <div class="flex items-center justify-between sm:block">
               <Label class="text-muted-foreground text-xs">在线状态</Label>
               <div class="flex items-center gap-2">
-                <span class="relative flex h-2.5 w-2.5">
-                  <span v-if="isOnline(viewingAgent)" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span :class="isOnline(viewingAgent) ? 'bg-green-500' : 'bg-gray-400'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
-                </span>
+                <Wifi v-if="isOnline(viewingAgent)" class="h-4 w-4 text-green-500" />
+                <WifiOff v-else class="h-4 w-4 text-muted-foreground" />
                 <span class="text-sm">{{ isOnline(viewingAgent) ? '在线' : '离线' }}</span>
               </div>
             </div>
@@ -485,7 +527,8 @@ onUnmounted(() => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction class="bg-destructive text-white hover:bg-destructive/90" @click="deleteAgent">删除</AlertDialogAction>
+          <AlertDialogAction class="bg-destructive text-white hover:bg-destructive/90" @click="deleteAgent">删除
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -499,7 +542,8 @@ onUnmounted(() => {
         </DialogHeader>
         <div class="space-y-4">
           <div class="space-y-2">
-            <div v-for="platform in platforms" :key="`${platform.os}-${platform.arch}`" class="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+            <div v-for="platform in platforms" :key="`${platform.os}-${platform.arch}`"
+              class="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
               <span class="font-medium">{{ getPlatformLabel(platform.os, platform.arch) }}</span>
               <Button size="sm" @click="downloadAgent(platform.os, platform.arch)">
                 <Download class="h-4 w-4 mr-1.5" />下载
@@ -510,18 +554,26 @@ onUnmounted(() => {
             <h4 class="font-medium mb-2">使用说明</h4>
             <ol class="text-sm text-muted-foreground space-y-1.5 list-decimal list-inside">
               <li>下载对应平台的 Agent 压缩包并解压</li>
-              <li>复制 <code class="bg-muted px-1.5 py-0.5 rounded text-foreground">config.example.ini</code> 为 <code class="bg-muted px-1.5 py-0.5 rounded text-foreground">config.ini</code></li>
+              <li>复制 <code class="bg-muted px-1.5 py-0.5 rounded text-foreground">config.example.ini</code> 为 <code
+                  class="bg-muted px-1.5 py-0.5 rounded text-foreground">config.ini</code></li>
               <li>编辑 <code class="bg-muted px-1.5 py-0.5 rounded text-foreground">config.ini</code>，填写服务器地址和注册令牌</li>
-              <li>运行 <code class="bg-muted px-1.5 py-0.5 rounded text-foreground">./baihu-agent start</code> 启动（后台运行）</li>
+              <li>运行 <code class="bg-muted px-1.5 py-0.5 rounded text-foreground">./baihu-agent start</code> 启动（后台运行）
+              </li>
             </ol>
             <div class="mt-3 text-sm text-muted-foreground">
               <p class="font-medium text-foreground mb-1.5">常用命令：</p>
               <div class="space-y-1">
-                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent start</code> <span class="text-xs">- 后台启动</span></div>
-                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent stop</code> <span class="text-xs">- 停止运行</span></div>
-                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent status</code> <span class="text-xs">- 查看状态</span></div>
-                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent logs</code> <span class="text-xs">- 查看日志</span></div>
-                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent run</code> <span class="text-xs">- 前台运行</span></div>
+                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent start</code> <span
+                    class="text-xs">- 后台启动</span></div>
+                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent stop</code> <span
+                    class="text-xs">- 停止运行</span></div>
+                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent status</code>
+                  <span class="text-xs">- 查看状态</span>
+                </div>
+                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent logs</code> <span
+                    class="text-xs">- 查看日志</span></div>
+                <div><code class="bg-muted px-1.5 py-0.5 rounded text-foreground text-xs">baihu-agent run</code> <span
+                    class="text-xs">- 前台运行</span></div>
               </div>
             </div>
           </div>

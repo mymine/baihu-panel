@@ -119,6 +119,7 @@ func Setup(c *Controllers) *gin.Engine {
 				tasks.GET("/:id", c.Task.GetTask)
 				tasks.PUT("/:id", c.Task.UpdateTask)
 				tasks.DELETE("/:id", c.Task.DeleteTask)
+				tasks.POST("/stop/:logID", c.Task.StopTask)
 			}
 
 			// Task execution routes

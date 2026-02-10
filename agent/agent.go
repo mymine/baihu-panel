@@ -33,6 +33,7 @@ const (
 	WSTypeTaskLog       = "task_log"
 	WSTypeExecute       = "execute"
 	WSTypeTaskHeartbeat = "task_heartbeat"
+	WSTypeStop          = "stop"
 )
 
 type WSMessage struct {
@@ -370,6 +371,8 @@ func (a *Agent) handleWSMessage(msg *WSMessage) {
 		a.fetchTasks()
 	case WSTypeExecute:
 		a.handleExecute(msg.Data)
+	case WSTypeStop:
+		a.handleStop(msg.Data)
 	}
 }
 
@@ -503,6 +506,23 @@ func (a *Agent) handleExecute(data json.RawMessage) {
 
 	// 立即执行任务（加入队列）
 	a.scheduler.EnqueueOrExecute(execReq)
+}
+
+func (a *Agent) handleStop(data json.RawMessage) {
+	var req struct {
+		LogID uint `json:"log_id"`
+	}
+	if err := json.Unmarshal(data, &req); err != nil {
+		logger.Errorf("解析停止请求失败: %v", err)
+		return
+	}
+
+	logger.Infof("[Agent] 收到停止指令 LogID: %d", req.LogID)
+	if a.scheduler.StopLog(req.LogID) {
+		logger.Infof("[Agent] 任务执行 #%d 已成功停止", req.LogID)
+	} else {
+		logger.Warnf("[Agent] 任务执行 #%d 停止失败（可能已完成或不在运行队列中）", req.LogID)
+	}
 }
 
 // RealTimeLogWriter 实时日志写入器，通过 WebSocket 发送日志

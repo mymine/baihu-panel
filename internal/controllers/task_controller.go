@@ -236,3 +236,19 @@ func (tc *TaskController) DeleteTask(c *gin.Context) {
 
 	utils.SuccessMsg(c, "删除成功")
 }
+
+func (tc *TaskController) StopTask(c *gin.Context) {
+	logID, err := strconv.ParseUint(c.Param("logID"), 10, 32)
+	if err != nil {
+		utils.BadRequest(c, "无效的日志ID")
+		return
+	}
+
+	err = tc.executorService.StopTaskExecution(uint(logID))
+	if err != nil {
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
+	utils.SuccessMsg(c, "停止请求已发送")
+}

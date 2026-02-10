@@ -69,7 +69,8 @@ export const api = {
     create: (data: Partial<Task>) => request<Task>('/tasks', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: number, data: Partial<Task>) => request<Task>(`/tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: number) => request(`/tasks/${id}`, { method: 'DELETE' }),
-    execute: (id: number) => request<ExecutionResult>(`/execute/task/${id}`, { method: 'POST' })
+    execute: (id: number) => request<ExecutionResult>(`/execute/task/${id}`, { method: 'POST' }),
+    stop: (logID: number) => request(`/tasks/stop/${logID}`, { method: 'POST' })
   },
   scripts: {
     list: () => request<Script[]>('/scripts'),

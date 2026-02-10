@@ -63,6 +63,7 @@ const (
 	WSTypeEnabled       = "enabled"
 	WSTypeFetchTasks    = "fetch_tasks"
 	WSTypeTaskHeartbeat = "task_heartbeat"
+	WSTypeStop          = "stop"
 )
 
 // TablePrefix 表前缀，从配置文件读取

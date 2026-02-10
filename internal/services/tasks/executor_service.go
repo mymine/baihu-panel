@@ -480,6 +480,39 @@ func (es *ExecutorService) ExecuteTask(taskID int) *executor.ExecutionResult {
 	}
 }
 
+// StopTaskExecution stops a running task execution by LogID
+func (es *ExecutorService) StopTaskExecution(logID uint) error {
+	var taskLog models.TaskLog
+	if err := database.DB.First(&taskLog, logID).Error; err != nil {
+		return fmt.Errorf("日志不存在")
+	}
+
+	if taskLog.Status != "running" {
+		return fmt.Errorf("任务已结束")
+	}
+
+	task := es.taskService.GetTaskByID(int(taskLog.TaskID))
+	if task == nil {
+		return fmt.Errorf("任务不存在")
+	}
+
+	// 远程任务：发送停止指令到 Agent
+	if task.AgentID != nil && *task.AgentID > 0 {
+		logger.Infof("[Executor] 请求停止远程任务 #%d (Agent #%d, LogID: %d)", task.ID, *task.AgentID, logID)
+		return es.agentWSManager.SendToAgent(*task.AgentID, constant.WSTypeStop, map[string]interface{}{
+			"log_id": logID,
+		})
+	}
+
+	// 本地任务：直接停止调度器中的执行实例
+	logger.Infof("[Executor] 请求停止本地任务 #%d (LogID: %d)", task.ID, logID)
+	if es.scheduler.StopLog(logID) {
+		return nil
+	}
+
+	return fmt.Errorf("任务当前不在运行队列中或已完成")
+}
+
 // GetRunningCount 获取正在运行任务数量
 func (es *ExecutorService) GetRunningCount() int {
 	return es.scheduler.GetRunningTaskCount()
