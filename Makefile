@@ -76,11 +76,20 @@ run:
 
 # Development run with hot reload (both frontend and backend)
 dev:
-	@command -v air > /dev/null 2>&1 || go install github.com/air-verse/air@latest
 	@command -v concurrently > /dev/null 2>&1 || npm install -g concurrently
 	concurrently --kill-others \
-		"air" \
+		"go tool air" \
 		"cd web && npm run dev"
+
+# Run agent with hot reload
+agent-dev:
+	go tool air -c agent.air.toml
+
+# Run agent
+agent-run:
+	@mkdir -p bin
+	$(GOBUILD) -o bin/baihu-agent ./agent
+	./bin/baihu-agent run -c ../agent/config.ini
 
 # Install dependencies
 deps:
