@@ -1,5 +1,5 @@
 # Variables
-BINARY=baihu
+BINARY=bin/baihu
 GOBUILD=go build
 GOCLEAN=go clean
 GOGET=go get
@@ -19,6 +19,7 @@ build-web:
 
 # Build the application (requires frontend to be built first)
 build:
+	@mkdir -p bin
 	CGO_ENABLED=0 $(GOBUILD) $(LDFLAGS) -o $(BINARY) main.go
 
 # Build all (frontend + backend)
@@ -59,20 +60,24 @@ build-agent-darwin-arm64:
 # Clean built files
 clean:
 	$(GOCLEAN)
-	rm -f $(BINARY)
+	rm -rf bin/
 	rm -rf internal/static/dist
 	mkdir -p internal/static/dist
 	touch internal/static/dist/.gitkeep
 
 # Run the application
 run:
+	@mkdir -p bin
 	$(GOBUILD) -o $(BINARY) main.go
 	./$(BINARY)
 
-# Development run (without embedding frontend)
+# Development run with hot reload (both frontend and backend)
 dev:
-	$(GOBUILD) -o $(BINARY) main.go
-	./$(BINARY)
+	@command -v air > /dev/null 2>&1 || go install github.com/air-verse/air@latest
+	@command -v concurrently > /dev/null 2>&1 || npm install -g concurrently
+	concurrently --kill-others \
+		"air" \
+		"cd web && npm run dev"
 
 # Install dependencies
 deps:

@@ -49,3 +49,6 @@ __pycache__/
 
 # Misc
 .stfolder
+
+bin/
+
