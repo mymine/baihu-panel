@@ -116,7 +116,7 @@ watch(() => props.open, async (val) => {
         // 兼容旧字段: 优先使用 $task_concurrency, 若无则默认 1
         let concurrency = 1
         if (parsed['$task_concurrency'] !== undefined) {
-             concurrency = parsed['$task_concurrency'] === 1 ? 1 : 0
+          concurrency = parsed['$task_concurrency'] === 1 ? 1 : 0
         }
         repoConfig.value = { ...defaultConfig, ...parsed, concurrency }
       } catch {
@@ -149,7 +149,7 @@ async function save() {
       ...repoConfig.value,
       '$task_concurrency': repoConfig.value.concurrency !== undefined ? repoConfig.value.concurrency : 1
     }
-    
+
     form.value.config = JSON.stringify(configToSave)
     form.value.command = `[${repoConfig.value.source_type}] ${repoConfig.value.source_url}`
     form.value.agent_id = selectedAgentId.value === 'local' ? null : Number(selectedAgentId.value)
@@ -168,7 +168,8 @@ async function save() {
 
 <template>
   <Dialog :open="open" @update:open="emit('update:open', $event)">
-    <DialogContent class="sm:max-w-[480px] max-h-[85vh] flex flex-col !gap-0 !p-0" :trap-focus="false" @open-auto-focus.prevent>
+    <DialogContent class="sm:max-w-[480px] max-h-[85vh] flex flex-col !gap-0 !p-0" :trap-focus="false"
+      @openAutoFocus.prevent>
       <DialogHeader class="shrink-0 p-6 pb-0">
         <DialogTitle>{{ isEdit ? '编辑仓库同步' : '新建仓库同步' }}</DialogTitle>
       </DialogHeader>
@@ -179,7 +180,8 @@ async function save() {
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">源类型</Label>
-          <Select :model-value="repoConfig.source_type" @update:model-value="(v) => repoConfig.source_type = String(v || 'git')">
+          <Select :model-value="repoConfig.source_type"
+            @update:model-value="(v) => repoConfig.source_type = String(v || 'git')">
             <SelectTrigger class="sm:col-span-3 h-8 text-sm">
               <SelectValue placeholder="选择源类型" />
             </SelectTrigger>
@@ -191,12 +193,15 @@ async function save() {
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">源地址</Label>
-          <Input v-model="repoConfig.source_url" :placeholder="repoConfig.source_type === 'git' ? 'https://github.com/user/repo.git' : 'https://example.com/file.js'" class="sm:col-span-3 h-8 text-xs font-mono" />
+          <Input v-model="repoConfig.source_url"
+            :placeholder="repoConfig.source_type === 'git' ? 'https://github.com/user/repo.git' : 'https://example.com/file.js'"
+            class="sm:col-span-3 h-8 text-xs font-mono" />
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">目标路径</Label>
           <div class="sm:col-span-3">
-            <DirTreeSelect v-if="selectedAgentId === 'local'" :model-value="repoConfig.target_path || ''" @update:model-value="v => repoConfig.target_path = v" />
+            <DirTreeSelect v-if="selectedAgentId === 'local'" :model-value="repoConfig.target_path || ''"
+              @update:model-value="v => repoConfig.target_path = v" />
             <Input v-else v-model="repoConfig.target_path" placeholder="Agent 上的目标路径" class="h-8 text-sm" />
           </div>
         </div>
@@ -214,15 +219,20 @@ async function save() {
             <p class="text-xs text-muted-foreground mt-1">仓库同步任务暂时仅支持本地执行</p>
           </div>
         </div>
-        <div v-if="repoConfig.source_type === 'git'" class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
+        <div v-if="repoConfig.source_type === 'git'"
+          class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">分支</Label>
-          <Input v-model="repoConfig.branch" placeholder="main (可选)" class="sm:col-span-3 h-8 text-sm" autocomplete="off" />
+          <Input v-model="repoConfig.branch" placeholder="main (可选)" class="sm:col-span-3 h-8 text-sm"
+            autocomplete="off" />
         </div>
-        <div v-if="repoConfig.source_type === 'git'" class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
+        <div v-if="repoConfig.source_type === 'git'"
+          class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">稀疏路径</Label>
-          <Input v-model="repoConfig.sparse_path" placeholder="仅拉取指定目录或文件 (可选)" class="sm:col-span-3 h-8 text-sm" autocomplete="off" />
+          <Input v-model="repoConfig.sparse_path" placeholder="仅拉取指定目录或文件 (可选)" class="sm:col-span-3 h-8 text-sm"
+            autocomplete="off" />
         </div>
-        <div v-if="repoConfig.source_type === 'git' && repoConfig.sparse_path" class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
+        <div v-if="repoConfig.source_type === 'git' && repoConfig.sparse_path"
+          class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">单文件</Label>
           <div class="sm:col-span-3">
             <div class="flex items-center gap-3">
@@ -246,11 +256,13 @@ async function save() {
         </div>
         <div v-if="repoConfig.proxy === 'custom'" class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">代理地址</Label>
-          <Input v-model="repoConfig.proxy_url" placeholder="https://your-proxy.com/" class="sm:col-span-3 h-8 text-xs font-mono" autocomplete="off" />
+          <Input v-model="repoConfig.proxy_url" placeholder="https://your-proxy.com/"
+            class="sm:col-span-3 h-8 text-xs font-mono" autocomplete="off" />
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">认证Token</Label>
-          <Input v-model="repoConfig.auth_token" type="text" placeholder="可选，用于私有仓库" class="sm:col-span-3 h-8 text-sm" autocomplete="new-password" />
+          <Input v-model="repoConfig.auth_token" type="text" placeholder="可选，用于私有仓库" class="sm:col-span-3 h-8 text-sm"
+            autocomplete="new-password" />
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">并发控制</Label>
@@ -269,12 +281,9 @@ async function save() {
           <div class="sm:col-span-3">
             <p class="text-xs text-muted-foreground mb-1.5">格式: 秒 分 时 日 月 周</p>
             <div class="flex flex-wrap gap-1">
-              <span
-                v-for="preset in cronPresets"
-                :key="preset.value"
+              <span v-for="preset in cronPresets" :key="preset.value"
                 class="px-1.5 py-0.5 text-xs rounded bg-muted hover:bg-accent cursor-pointer transition-colors"
-                @click="form.schedule = preset.value"
-              >
+                @click="form.schedule = preset.value">
                 {{ preset.label }}
               </span>
             </div>
@@ -298,7 +307,8 @@ async function save() {
                   <SelectItem value="count">按条数</SelectItem>
                 </SelectContent>
               </Select>
-              <Input v-if="cleanType && cleanType !== 'none'" v-model.number="cleanKeep" type="number" :placeholder="cleanType === 'day' ? '7' : '100'" class="w-20 h-9 text-sm" />
+              <Input v-if="cleanType && cleanType !== 'none'" v-model.number="cleanKeep" type="number"
+                :placeholder="cleanType === 'day' ? '7' : '100'" class="w-20 h-9 text-sm" />
             </div>
           </div>
         </div>

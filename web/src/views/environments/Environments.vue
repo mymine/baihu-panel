@@ -100,16 +100,8 @@ async function deleteEnv() {
   deleteEnvId.value = null
 }
 
-async function toggleShow(env: EnvVar) {
-  const newHiddenStatus = !env.hidden
-  try {
-    await api.env.update(env.id, { ...env, hidden: newHiddenStatus })
-    env.hidden = newHiddenStatus
-    showValues.value[env.id] = !newHiddenStatus
-    toast.success(newHiddenStatus ? '值已隐藏并保存' : '值已显示并保存')
-  } catch {
-    toast.error('保存显示状态失败')
-  }
+function toggleShow(id: number) {
+  showValues.value[id] = !showValues.value[id]
 }
 
 function maskValue(value: string) {
@@ -163,7 +155,7 @@ onMounted(loadEnvVars)
             <TextOverflow :text="env.remark || '-'" title="备注" />
           </span>
           <span class="w-20 sm:w-24 shrink-0 flex justify-center gap-1">
-            <Button variant="ghost" size="icon" class="h-7 w-7" @click="toggleShow(env)"
+            <Button variant="ghost" size="icon" class="h-7 w-7" @click="toggleShow(env.id)"
               :title="showValues[env.id] ? '隐藏' : '显示'">
               <Eye v-if="!showValues[env.id]" class="h-3.5 w-3.5" />
               <EyeOff v-else class="h-3.5 w-3.5" />
@@ -183,7 +175,7 @@ onMounted(loadEnvVars)
     </div>
 
     <Dialog v-model:open="showDialog">
-      <DialogContent class="max-w-md">
+      <DialogContent class="max-w-md" @openAutoFocus.prevent>
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑变量' : '新建变量' }}</DialogTitle>
         </DialogHeader>

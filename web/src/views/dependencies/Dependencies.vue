@@ -202,8 +202,10 @@ onMounted(loadDeps)
               <Button variant="outline" size="icon" class="h-9 w-9 shrink-0" @click="loadDeps" :disabled="loading">
                 <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': loading }" />
               </Button>
-              <Button variant="outline" size="sm" class="h-9 shrink-0" @click="reinstallAll" :disabled="reinstallingAll || filteredDeps.length === 0">
-                <RotateCw class="h-4 w-4 sm:mr-1.5" :class="{ 'animate-spin': reinstallingAll }" /> <span class="hidden sm:inline">全部重装</span>
+              <Button variant="outline" size="sm" class="h-9 shrink-0" @click="reinstallAll"
+                :disabled="reinstallingAll || filteredDeps.length === 0">
+                <RotateCw class="h-4 w-4 sm:mr-1.5" :class="{ 'animate-spin': reinstallingAll }" /> <span
+                  class="hidden sm:inline">全部重装</span>
               </Button>
               <Button size="sm" class="h-9 shrink-0" @click="openInstallDialog">
                 <Download class="h-4 w-4 sm:mr-1.5" /> <span class="hidden sm:inline">安装</span>
@@ -212,7 +214,8 @@ onMounted(loadDeps)
           </div>
 
           <!-- 表头 -->
-          <div class="flex items-center gap-4 px-4 py-2 border-b bg-muted/50 text-sm text-muted-foreground font-medium min-w-[400px]">
+          <div
+            class="flex items-center gap-4 px-4 py-2 border-b bg-muted/50 text-sm text-muted-foreground font-medium min-w-[400px]">
             <span class="flex-1">包名</span>
             <span class="w-32">版本</span>
             <span class="w-48 hidden md:block">备注</span>
@@ -229,12 +232,8 @@ onMounted(loadDeps)
               <Package class="h-8 w-8 mx-auto mb-2 opacity-50" />
               {{ searchQuery ? '无匹配结果' : '暂无依赖包' }}
             </div>
-            <div
-              v-else
-              v-for="dep in filteredDeps"
-              :key="dep.id"
-              class="flex items-center gap-4 px-4 py-2 hover:bg-muted/50 transition-colors"
-            >
+            <div v-else v-for="dep in filteredDeps" :key="dep.id"
+              class="flex items-center gap-4 px-4 py-2 hover:bg-muted/50 transition-colors">
               <span class="flex-1 font-mono text-sm truncate">
                 <TextOverflow :text="dep.name" title="包名" />
               </span>
@@ -246,7 +245,8 @@ onMounted(loadDeps)
                 <Button v-if="dep.log" variant="ghost" size="icon" class="h-7 w-7" @click="showLog(dep)">
                   <FileText class="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" class="h-7 w-7" @click="reinstallPackage(dep)" :disabled="reinstalling === dep.id">
+                <Button variant="ghost" size="icon" class="h-7 w-7" @click="reinstallPackage(dep)"
+                  :disabled="reinstalling === dep.id">
                   <RotateCw class="h-4 w-4" :class="{ 'animate-spin': reinstalling === dep.id }" />
                 </Button>
                 <Button variant="ghost" size="icon" class="h-7 w-7 text-destructive" @click="confirmDelete(dep)">
@@ -261,7 +261,7 @@ onMounted(loadDeps)
 
     <!-- 安装对话框 -->
     <Dialog v-model:open="showInstallDialog">
-      <DialogContent class="sm:max-w-[400px]">
+      <DialogContent class="sm:max-w-[400px]" @openAutoFocus.prevent>
         <DialogHeader>
           <DialogTitle>安装 {{ getTypeLabel(activeTab) }} 包</DialogTitle>
         </DialogHeader>
@@ -309,7 +309,7 @@ onMounted(loadDeps)
 
     <!-- 日志对话框 -->
     <Dialog v-model:open="showLogDialog">
-      <DialogContent class="sm:max-w-[600px]">
+      <DialogContent class="sm:max-w-[600px]" @openAutoFocus.prevent>
         <DialogHeader>
           <DialogTitle>安装日志 - {{ logPkgName }}</DialogTitle>
         </DialogHeader>

@@ -22,7 +22,24 @@ func (es *EnvService) CreateEnvVar(name, value, remark string, hidden bool, user
 		Hidden: hidden,
 		UserID: uint(userID),
 	}
-	database.DB.Create(env)
+	data := map[string]interface{}{
+		"name":    name,
+		"value":   value,
+		"remark":  remark,
+		"hidden":  hidden,
+		"user_id": userID,
+	}
+	database.DB.Model(&models.EnvironmentVariable{}).Create(data)
+
+	// 将自动生成的 ID 赋值回对象以便返回
+	if id, ok := data["id"].(uint); ok {
+		env.ID = id
+	} else if id, ok := data["id"].(int64); ok {
+		env.ID = uint(id)
+	} else {
+		// 如果 ID 没有自动回填到 map，尝试通过刚才的数据查出来
+		database.DB.Where("name = ? AND user_id = ?", name, userID).Order("id DESC").First(env)
+	}
 	return env
 }
 

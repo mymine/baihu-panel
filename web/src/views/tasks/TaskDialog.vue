@@ -109,7 +109,7 @@ watch(() => props.open, async (val) => {
       if (!configStr) {
         configStr = '{}'
       }
-      
+
       const parsed = JSON.parse(configStr)
       // 确保解析结果是对象
       if (parsed && typeof parsed === 'object') {
@@ -178,10 +178,10 @@ async function save() {
     form.value.envs = selectedEnvIds.value.join(',')
     form.value.type = 'task'
     form.value.agent_id = selectedAgentId.value === 'local' ? null : Number(selectedAgentId.value)
-    
+
     // 保存配置 - 确保 concurrency 字段被正确保存
     let config: Record<string, any> = {}
-    
+
     // 如果 form.value.config 存在，先解析它以保留其他配置
     if (form.value.config) {
       try {
@@ -193,16 +193,16 @@ async function save() {
         config = {}
       }
     }
-    
+
     // 更新并发控制字段 (1: 开启, 0: 关闭)
     config['$task_concurrency'] = concurrency.value
-    
+
     // 重新序列化配置
     form.value.config = JSON.stringify(config)
 
     // 保存当前选择的执行位置对应的工作目录
     form.value.work_dir = currentWorkDir.value
-    
+
     if (props.isEdit && form.value.id) {
       await api.tasks.update(form.value.id, form.value)
       toast.success('任务已更新')
@@ -212,15 +212,15 @@ async function save() {
     }
     emit('update:open', false)
     emit('saved')
-  } catch (error) { 
-    toast.error('保存失败') 
+  } catch (error) {
+    toast.error('保存失败')
   }
 }
 </script>
 
 <template>
   <Dialog :open="open" @update:open="emit('update:open', $event)">
-    <DialogContent class="sm:max-w-[480px]" @open-auto-focus.prevent>
+    <DialogContent class="sm:max-w-[480px]" @openAutoFocus.prevent>
       <DialogHeader>
         <DialogTitle>{{ isEdit ? '编辑任务' : '新建任务' }}</DialogTitle>
       </DialogHeader>
@@ -248,7 +248,7 @@ async function save() {
                 <SelectValue placeholder="选择执行位置" />
               </SelectTrigger>
               <SelectContent>
-              <SelectItem value="local">本地执行</SelectItem>
+                <SelectItem value="local">本地执行</SelectItem>
                 <SelectItem v-for="agent in onlineAgents" :key="agent.id" :value="String(agent.id)">
                   {{ agent.name }} ({{ agent.status === 'online' ? '在线' : '离线' }})
                 </SelectItem>
@@ -265,12 +265,9 @@ async function save() {
           <div class="sm:col-span-3">
             <p class="text-xs text-muted-foreground mb-1.5">格式: 秒 分 时 日 月 周</p>
             <div class="flex flex-wrap gap-1">
-              <span
-                v-for="preset in cronPresets"
-                :key="preset.value"
+              <span v-for="preset in cronPresets" :key="preset.value"
                 class="px-1.5 py-0.5 text-xs rounded bg-muted hover:bg-accent cursor-pointer transition-colors"
-                @click="form.schedule = preset.value"
-              >
+                @click="form.schedule = preset.value">
                 {{ preset.label }}
               </span>
             </div>
@@ -294,7 +291,8 @@ async function save() {
                   <SelectItem value="count">按条数</SelectItem>
                 </SelectContent>
               </Select>
-              <Input v-if="cleanType && cleanType !== 'none'" v-model.number="cleanKeep" type="number" :placeholder="cleanType === 'day' ? '7' : '100'" class="w-20 h-9 text-sm" />
+              <Input v-if="cleanType && cleanType !== 'none'" v-model.number="cleanKeep" type="number"
+                :placeholder="cleanType === 'day' ? '7' : '100'" class="w-20 h-9 text-sm" />
             </div>
           </div>
         </div>
@@ -324,12 +322,9 @@ async function save() {
                   {{ allEnvVars.length === 0 ? '暂无环境变量' : '无匹配结果' }}
                 </div>
                 <div v-else class="max-h-[140px] overflow-y-auto space-y-0.5">
-                  <div
-                    v-for="env in filteredEnvVars"
-                    :key="env.id"
+                  <div v-for="env in filteredEnvVars" :key="env.id"
                     class="flex items-center gap-2 px-2 py-1 rounded hover:bg-muted cursor-pointer text-xs"
-                    @click="addEnv(env.id)"
-                  >
+                    @click="addEnv(env.id)">
                     <Plus class="h-3 w-3 text-muted-foreground" />
                     <span class="truncate">{{ env.name }}</span>
                   </div>
@@ -337,7 +332,8 @@ async function save() {
               </PopoverContent>
             </Popover>
             <div v-if="selectedEnvs.length > 0" class="flex flex-wrap gap-1">
-              <div v-for="env in selectedEnvs" :key="env.id" class="inline-flex items-center gap-0.5 px-2 py-0.5 text-xs h-5 rounded-full bg-secondary text-secondary-foreground">
+              <div v-for="env in selectedEnvs" :key="env.id"
+                class="inline-flex items-center gap-0.5 px-2 py-0.5 text-xs h-5 rounded-full bg-secondary text-secondary-foreground">
                 <span>{{ env.name }}</span>
                 <X class="h-2.5 w-2.5 cursor-pointer hover:text-destructive" @click="removeEnv(env.id)" />
               </div>

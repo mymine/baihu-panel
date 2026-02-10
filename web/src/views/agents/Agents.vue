@@ -323,7 +323,7 @@ onUnmounted(() => {
                 class="w-24 sm:w-32 shrink-0 font-medium text-xs sm:text-sm truncate cursor-pointer hover:text-primary"
                 @click="viewDetail(agent)" :title="agent.name">{{ agent.name }}</span>
               <span class="w-24 sm:w-28 shrink-0 text-xs sm:text-sm text-muted-foreground truncate">{{ agent.ip || '-'
-                }}</span>
+              }}</span>
               <span class="w-20 sm:w-32 shrink-0 text-xs sm:text-sm text-muted-foreground truncate hidden md:block">{{
                 agent.hostname || '-' }}</span>
               <span class="w-20 sm:w-36 shrink-0 text-xs sm:text-sm text-muted-foreground truncate hidden lg:block">{{
@@ -423,7 +423,7 @@ onUnmounted(() => {
 
     <!-- 详情对话框 -->
     <Dialog v-model:open="showDetailDialog">
-      <DialogContent class="sm:max-w-md md:max-w-lg">
+      <DialogContent class="sm:max-w-md md:max-w-lg" @openAutoFocus.prevent>
         <DialogHeader>
           <DialogTitle>Agent 详情</DialogTitle>
         </DialogHeader>
@@ -492,7 +492,7 @@ onUnmounted(() => {
 
     <!-- 编辑对话框 -->
     <Dialog v-model:open="showEditDialog">
-      <DialogContent>
+      <DialogContent @openAutoFocus.prevent>
         <DialogHeader>
           <DialogTitle>编辑 Agent</DialogTitle>
         </DialogHeader>
@@ -532,7 +532,7 @@ onUnmounted(() => {
 
     <!-- 下载对话框 -->
     <Dialog v-model:open="showDownloadDialog">
-      <DialogContent class="sm:max-w-lg">
+      <DialogContent class="sm:max-w-lg" @openAutoFocus.prevent>
         <DialogHeader>
           <DialogTitle>下载 Agent</DialogTitle>
           <DialogDescription>当前版本: {{ agentVersion }}</DialogDescription>
@@ -580,7 +580,7 @@ onUnmounted(() => {
 
     <!-- 创建令牌对话框 -->
     <Dialog v-model:open="showTokenDialog">
-      <DialogContent>
+      <DialogContent @openAutoFocus.prevent>
         <DialogHeader>
           <DialogTitle>生成令牌</DialogTitle>
         </DialogHeader>

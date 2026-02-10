@@ -522,7 +522,7 @@ onUnmounted(() => {
 
     <!-- 新建对话框 -->
     <Dialog v-model:open="showCreateDialog">
-      <DialogContent class="max-w-xs">
+      <DialogContent class="max-w-xs" @openAutoFocus.prevent>
         <DialogHeader>
           <DialogTitle class="text-sm">新建</DialogTitle>
         </DialogHeader>
@@ -570,7 +570,7 @@ onUnmounted(() => {
 
     <!-- 重命名对话框 -->
     <Dialog v-model:open="showRenameDialog">
-      <DialogContent class="max-w-xs" @open-auto-focus.prevent>
+      <DialogContent class="max-w-xs" @openAutoFocus.prevent>
         <DialogHeader>
           <DialogTitle class="text-sm">重命名</DialogTitle>
         </DialogHeader>
@@ -592,7 +592,7 @@ onUnmounted(() => {
     <Dialog v-model:open="showTerminalDialog">
       <DialogContent
         class="w-[calc(100%-2rem)] sm:max-w-3xl h-[60vh] sm:h-[70vh] flex flex-col p-0 overflow-hidden !bg-[#1e1e1e] border-[#3c3c3c]"
-        :show-close-button="false">
+        :show-close-button="false" @openAutoFocus.prevent>
         <div class="flex items-center justify-between px-3 sm:px-4 py-2 border-b border-[#3c3c3c]">
           <span class="text-xs sm:text-sm font-medium text-gray-300">运行脚本</span>
           <Button variant="ghost" size="icon" class="h-6 w-6 text-gray-400 hover:text-white hover:bg-white/10"
