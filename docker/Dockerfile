@@ -115,8 +115,7 @@ FROM ghcr.io/engigu/baihu:${BASE_TAG}
 ENV TZ=Asia/Shanghai
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
-ENV PATH="/app/envs/node/bin:/app/envs/python/bin:$PATH"
-ENV NODE_PATH="/app/envs/node/lib/node_modules"
+ENV PATH="/app/envs/mise/shims:/app/envs/mise/bin:$PATH"
 
 # # 安装必要系统工具 + Node + Python
 # RUN sed -i 's@deb.debian.org@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list.d/debian.sources \

@@ -1,6 +1,8 @@
 services:
   baihu:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     ports:
       - "8052:8052"
     volumes:

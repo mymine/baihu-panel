@@ -1,15 +1,28 @@
 FROM debian:bookworm-slim
 
 ENV TZ=Asia/Shanghai
-ENV PATH="/app/envs/node/bin:/app/envs/python/bin:$PATH"
-ENV NODE_PATH="/app/envs/node/lib/node_modules"
+ENV PATH="/app/envs/mise/shims:/app/envs/mise/bin:$PATH"
 
-# 安装必要系统工具 + Node + Python
+# 安装必要系统工具
 RUN sed -i 's@deb.debian.org@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list.d/debian.sources \
     && sed -i 's@security.debian.org@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.list.d/debian.sources \
     && echo "${TZ}" > /etc/timezone \
     && ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-         tzdata git gcc curl wget vim nodejs htop npm python3 python3-venv python3-pip \
+         tzdata git gcc curl wget vim htop ca-certificates rsync \
+         build-essential libssl-dev zlib1g-dev libbz2-dev \
+         libreadline-dev libsqlite3-dev libncursesw5-dev \
+         xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# 安装 mise
+RUN curl https://mise.run | MISE_INSTALL_PATH=/usr/local/bin/mise sh
+
+# 使用 mise 安装最新版本的 Node.js 和 Python
+# 暂时安装到 /opt/mise-base，启动时会复制到 /app/envs/mise
+ENV MISE_DATA_DIR=/opt/mise-base
+ENV MISE_CONFIG_DIR=/opt/mise-base
+ENV MISE_HTTP_TIMEOUT=300
+RUN (mise use -g node@latest python@latest || mise use -g node@latest python@latest || mise use -g node@latest python@latest) \
+    && mise prune -- -f

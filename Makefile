@@ -97,19 +97,25 @@ deps:
 
 # Docker build
 docker-build:
-	docker build -t $(BINARY) -f docker/Dockerfile .
+	docker build -t baihu:dev -f docker/Dockerfile .
 
 # Docker run
 docker-run:
-	docker run -p 8052:8052 $(BINARY)
+	docker run -p 8052:8052 baihu:dev
 
 # Docker compose up
 docker-up:
-	docker-compose -f docker/docker-compose.yml up -d
+	docker-compose up -d
 
 # Docker compose down
 docker-down:
-	docker-compose -f docker/docker-compose.yml down
+	docker-compose down
+
+# Build and run in development mode (foreground with logs)
+docker-dev:
+	docker-compose down
+	docker-compose build
+	docker-compose up
 
 # Help
 help:
@@ -124,4 +130,5 @@ help:
 	@echo "  docker-run     - Run Docker container"
 	@echo "  docker-up      - Start Docker Compose stack"
 	@echo "  docker-down    - Stop Docker Compose stack"
+	@echo "  docker-dev     - Build and run Docker Compose in foreground"
 	@echo "  help           - Show this help message"
