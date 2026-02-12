@@ -19,10 +19,11 @@ RUN sed -i 's@deb.debian.org@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.li
 # 安装 mise
 RUN curl https://mise.run | MISE_INSTALL_PATH=/usr/local/bin/mise sh
 
-# 使用 mise 安装最新版本的 Node.js 和 Python
-# 暂时安装到 /opt/mise-base，启动时会复制到 /app/envs/mise
+# 使用 mise 安装 Node.js 和 Python
 ENV MISE_DATA_DIR=/opt/mise-base
 ENV MISE_CONFIG_DIR=/opt/mise-base
 ENV MISE_HTTP_TIMEOUT=300
-RUN (mise use -g node@latest python@latest || mise use -g node@latest python@latest || mise use -g node@latest python@latest) \
+# 使用镜像源加速 Python 编译下载
+ENV PYTHON_BUILD_MIRROR_URL=https://pyenv.pages.dev/api/mirror/binaries
+RUN (mise use -g node@22 python@3.12 || mise use -g node@22 python@3.12) \
     && mise prune -- -f
