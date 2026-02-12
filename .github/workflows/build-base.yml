@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        base_type: [debian, alpine, debian13]
+        base_type: [debian, debian13]
         platform:
           - linux/amd64
           - linux/arm64
@@ -30,14 +30,14 @@ jobs:
             platform: linux/arm64
             dockerfile: docker/Dockerfile.base
             tag_suffix: ""
-          - base_type: alpine
-            platform: linux/amd64
-            dockerfile: docker/Dockerfile.alpine.base
-            tag_suffix: "-alpine"
-          - base_type: alpine
-            platform: linux/arm64
-            dockerfile: docker/Dockerfile.alpine.base
-            tag_suffix: "-alpine"
+#           - base_type: alpine
+#             platform: linux/amd64
+#             dockerfile: docker/Dockerfile.alpine.base
+#             tag_suffix: "-alpine"
+#           - base_type: alpine
+#             platform: linux/arm64
+#             dockerfile: docker/Dockerfile.alpine.base
+#             tag_suffix: "-alpine"
           - base_type: debian13
             platform: linux/amd64
             dockerfile: docker/Dockerfile.debian13.base
@@ -115,12 +115,12 @@ jobs:
     needs: build
     strategy:
       matrix:
-        base_type: [debian, alpine, debian13]
+        base_type: [debian, debian13]
         include:
           - base_type: debian
             tag: base
-          - base_type: alpine
-            tag: base-alpine
+#           - base_type: alpine
+#             tag: base-alpine
           - base_type: debian13
             tag: base-debian13
 
