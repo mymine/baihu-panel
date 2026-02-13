@@ -15,7 +15,7 @@ const password = ref('')
 const loading = ref(false)
 
 const siteTitle = ref('白虎面板')
-const siteSubtitle = ref('轻量级定时任务管理系统')
+const siteSubtitle = ref('极致轻量、高性能的自动化任务调度平台')
 const siteIcon = ref('')
 const demoMode = ref(false)
 
@@ -26,11 +26,11 @@ function loadCachedSettings() {
     if (cached) {
       const settings = JSON.parse(cached)
       siteTitle.value = settings.title || '白虎面板'
-      siteSubtitle.value = settings.subtitle || '轻量级定时任务管理系统'
+      siteSubtitle.value = settings.subtitle || '极致轻量、高性能的自动化任务调度平台'
       siteIcon.value = settings.icon || ''
       demoMode.value = settings.demo_mode || false
       document.title = siteTitle.value
-      
+
       // 设置 favicon
       if (siteIcon.value && siteIcon.value.trim().startsWith('<svg')) {
         const blob = new Blob([siteIcon.value], { type: 'image/svg+xml' })
@@ -44,7 +44,7 @@ function loadCachedSettings() {
         link.type = 'image/svg+xml'
         link.href = url
       }
-      
+
       return true
     }
   } catch (e) {
@@ -56,16 +56,16 @@ function loadCachedSettings() {
 async function loadSiteSettings() {
   // 先加载缓存
   const hasCached = loadCachedSettings()
-  
+
   // 后台异步更新
   try {
     const res = await api.settings.getPublicSite()
     siteTitle.value = res.title || '白虎面板'
-    siteSubtitle.value = res.subtitle || '轻量级定时任务管理系统'
+    siteSubtitle.value = res.subtitle || '极致轻量、高性能的自动化任务调度平台'
     siteIcon.value = res.icon || ''
     demoMode.value = res.demo_mode || false
     document.title = siteTitle.value
-    
+
     // 保存到 localStorage
     localStorage.setItem('site_settings', JSON.stringify({
       title: siteTitle.value,
@@ -73,13 +73,13 @@ async function loadSiteSettings() {
       icon: siteIcon.value,
       demo_mode: demoMode.value
     }))
-    
+
     // 演示模式下自动填充账号密码
     if (demoMode.value) {
       username.value = 'admin'
       password.value = '123456'
     }
-    
+
     // 设置 favicon
     if (siteIcon.value && siteIcon.value.trim().startsWith('<svg')) {
       const blob = new Blob([siteIcon.value], { type: 'image/svg+xml' })
@@ -97,7 +97,7 @@ async function loadSiteSettings() {
     // 如果没有缓存，使用默认值
     if (!hasCached) {
       siteTitle.value = '白虎面板'
-      siteSubtitle.value = '轻量级定时任务管理系统'
+      siteSubtitle.value = '极致轻量、高性能的自动化任务调度平台'
     }
   }
 }
@@ -125,7 +125,7 @@ onMounted(loadSiteSettings)
     <div class="absolute top-4 right-4">
       <ThemeToggle />
     </div>
-    
+
     <div class="border rounded-lg bg-background shadow-sm overflow-hidden w-full max-w-[400px] lg:max-w-none lg:w-auto">
       <div class="flex">
         <!-- 左侧登录表单 -->

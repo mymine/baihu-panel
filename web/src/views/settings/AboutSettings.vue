@@ -12,7 +12,7 @@ const features = ['脚本管理', '定时任务', '在线终端', '执行日志'
 async function loadAbout() {
   try {
     aboutInfo.value = await api.settings.getAbout()
-  } catch {}
+  } catch { }
 }
 
 onMounted(loadAbout)
@@ -22,8 +22,8 @@ onMounted(loadAbout)
   <div>
     <!-- 站点关于 -->
     <div class="mb-6">
-      <h3 class="text-lg font-semibold mb-1">白虎面板</h3>
-      <p class="text-sm text-muted-foreground">一个轻量级的定时任务管理系统，支持脚本管理、定时执行和日志追踪。</p>
+      <h3 class="text-lg font-semibold mb-1">白虎面板 (Baihu Panel)</h3>
+      <p class="text-sm text-muted-foreground">极致轻量、高性能的自动化任务调度平台。深度集成 Mise 运行时管理，支持多语言环境动态切换与全自动依赖管理。</p>
     </div>
 
     <div class="grid sm:grid-cols-2 gap-x-8 gap-y-5">
@@ -32,14 +32,16 @@ onMounted(loadAbout)
         <div>
           <h4 class="text-sm font-medium mb-2">技术栈</h4>
           <div class="flex flex-wrap gap-1.5">
-            <Badge v-for="tech in techStack" :key="tech" class="text-xs bg-primary/15 text-primary border-0">{{ tech }}</Badge>
+            <Badge v-for="tech in techStack" :key="tech" class="text-xs bg-primary/15 text-primary border-0">{{ tech }}
+            </Badge>
           </div>
         </div>
 
         <div>
           <h4 class="text-sm font-medium mb-2">功能特性</h4>
           <div class="flex flex-wrap gap-1.5">
-            <Badge v-for="feature in features" :key="feature" class="text-xs bg-accent text-accent-foreground">{{ feature }}</Badge>
+            <Badge v-for="feature in features" :key="feature" class="text-xs bg-accent text-accent-foreground">{{
+              feature }}</Badge>
           </div>
         </div>
       </div>
@@ -75,7 +77,8 @@ onMounted(loadAbout)
     <!-- 底部：版权和链接 -->
     <div class="mt-6 pt-4 border-t flex items-center justify-center gap-2 text-sm text-muted-foreground">
       <span>© {{ new Date().getFullYear() }} 保留所有权利。</span>
-      <a href="https://github.com/engigu/baihu-panel/" target="_blank" class="inline-flex items-center gap-1 text-primary hover:underline">
+      <a href="https://github.com/engigu/baihu-panel/" target="_blank"
+        class="inline-flex items-center gap-1 text-primary hover:underline">
         <ExternalLink class="h-3.5 w-3.5" />
         GitHub 仓库
       </a>

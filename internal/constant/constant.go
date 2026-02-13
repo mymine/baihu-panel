@@ -99,7 +99,7 @@ var DefaultIcon = `<svg t="1766107903919" class="icon" viewBox="0 0 1024 1024" v
 var DefaultSettings = map[string]map[string]string{
 	SectionSite: {
 		KeyTitle:      "白虎面板",
-		KeySubtitle:   "轻量级定时任务管理系统",
+		KeySubtitle:   "极致轻量、高性能的自动化任务调度平台",
 		KeyIcon:       DefaultIcon,
 		KeyPageSize:   "10",
 		KeyCookieDays: "7",
