@@ -267,6 +267,31 @@ async function handleDownload(path: string) {
   }
 }
 
+async function handleCopyFile(path: string) {
+  console.log('Copy file requested:', path)
+  try {
+    const parts = path.split('/')
+    const filename = parts.pop() || ''
+    const dir = parts.join('/')
+    
+    const dotIndex = filename.lastIndexOf('.')
+    let newFilename = ''
+    if (dotIndex !== -1 && dotIndex > 0) {
+      newFilename = filename.substring(0, dotIndex) + '-副本' + filename.substring(dotIndex)
+    } else {
+      newFilename = filename + '-副本'
+    }
+    
+    const targetPath = dir ? `${dir}/${newFilename}` : newFilename
+    
+    await api.files.copy(path, targetPath)
+    toast.success('已复制为 ' + newFilename)
+    await loadTree()
+  } catch (error: any) {
+    toast.error('复制失败: ' + (error.message || '未知错误'))
+  }
+}
+
 onMounted(loadTree)
 </script>
 
@@ -295,7 +320,7 @@ onMounted(loadTree)
         </div>
         <FileTreeNode v-for="node in fileTree" :key="node.path" :node="node" :expanded-dirs="expandedDirs"
           :selected-path="selectedFile || selectedDir" @select="handleSelect" @delete="confirmDeleteFile"
-          @download-file="handleDownload" />
+          @download-file="handleDownload" @duplicate="handleCopyFile" />
       </div>
     </div>
 

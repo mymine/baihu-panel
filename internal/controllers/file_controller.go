@@ -269,6 +269,54 @@ func (fc *FileController) MoveFile(c *gin.Context) {
 	utils.Success(c, nil)
 }
 
+func (fc *FileController) CopyFile(c *gin.Context) {
+	var req struct {
+		SourcePath string `json:"sourcePath" binding:"required"`
+		TargetPath string `json:"targetPath" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
+	sourceFull, sourceSafe := fc.checkPath(req.SourcePath, false)
+	targetFull, targetSafe := fc.checkPath(req.TargetPath, false)
+
+	if !sourceSafe || !targetSafe {
+		utils.Forbidden(c, "访问被拒绝")
+		return
+	}
+
+	if sourceFull == targetFull {
+		utils.Success(c, nil)
+		return
+	}
+
+	// Read content
+	content, err := os.ReadFile(sourceFull)
+	if err != nil {
+		utils.NotFound(c, "源文件不存在或无法读取")
+		return
+	}
+
+	// 确保目标目录存在
+	os.MkdirAll(filepath.Dir(targetFull), 0755)
+
+	// 检查目标是否存在
+	if _, err := os.Stat(targetFull); err == nil {
+		utils.BadRequest(c, "目标已存在")
+		return
+	}
+
+	if err := os.WriteFile(targetFull, content, 0644); err != nil {
+		utils.ServerError(c, err.Error())
+		return
+	}
+
+	utils.Success(c, nil)
+}
+
 func (fc *FileController) RenameFile(c *gin.Context) {
 	var req struct {
 		OldPath string `json:"oldPath" binding:"required"`

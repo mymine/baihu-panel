@@ -58,11 +58,12 @@ export const api = {
       request('/auth/register', { method: 'POST', body: JSON.stringify(data) })
   },
   tasks: {
-    list: (params?: { page?: number; page_size?: number; name?: string; agent_id?: number }) => {
+    list: (params?: { page?: number; page_size?: number; name?: string; agent_id?: number; tags?: string }) => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
       if (params?.page_size) query.set('page_size', String(params.page_size))
       if (params?.name) query.set('name', params.name)
+      if (params?.tags) query.set('tags', params.tags)
       if (params?.agent_id) query.set('agent_id', String(params.agent_id))
       return request<TaskListResponse>(`/tasks?${query}`)
     },
@@ -160,6 +161,7 @@ export const api = {
     delete: (path: string) => request('/files/delete', { method: 'POST', body: JSON.stringify({ path }) }),
     rename: (oldPath: string, newPath: string) => request('/files/rename', { method: 'POST', body: JSON.stringify({ oldPath, newPath }) }),
     move: (oldPath: string, newPath: string) => request('/files/move', { method: 'POST', body: JSON.stringify({ oldPath, newPath }) }),
+    copy: (sourcePath: string, targetPath: string) => request('/files/copy', { method: 'POST', body: JSON.stringify({ sourcePath, targetPath }) }),
     uploadArchive: async (file: File, targetPath?: string) => {
       const formData = new FormData()
       formData.append('file', file)
@@ -265,6 +267,7 @@ export interface Task {
   id: number
   name: string
   command: string
+  tags: string
   type: string
   trigger_type: string
   config: string

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Checkbox } from '@/components/ui/checkbox'
 import DirTreeSelect from '@/components/DirTreeSelect.vue'
+import { X } from 'lucide-vue-next'
 import { api, type Task, type RepoConfig, type Agent } from '@/api'
 import { toast } from 'vue-sonner'
 
@@ -58,6 +59,23 @@ const cleanType = ref('none')
 const cleanKeep = ref(30)
 const allAgents = ref<Agent[]>([])
 const selectedAgentId = ref<string>('local')
+const tagInput = ref('')
+
+function addTag() {
+  const val = tagInput.value.trim()
+  if (!val) return
+  const currentTags = form.value.tags ? form.value.tags.split(',').filter(Boolean) : []
+  if (!currentTags.includes(val)) {
+    currentTags.push(val)
+    form.value.tags = currentTags.join(',')
+  }
+  tagInput.value = ''
+}
+
+function removeTag(tagToRemove: string) {
+  const currentTags = form.value.tags ? form.value.tags.split(',').filter(Boolean) : []
+  form.value.tags = currentTags.filter(t => t !== tagToRemove).join(',')
+}
 
 const concurrencyEnabled = computed({
   get: () => repoConfig.value.concurrency === 1,
@@ -177,6 +195,25 @@ async function save() {
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">任务名称</Label>
           <Input v-model="form.name" placeholder="我的仓库同步" class="sm:col-span-3 h-8 text-sm" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-3">
+          <Label class="sm:text-right text-sm pt-1.5">任务标签</Label>
+          <div class="sm:col-span-3 space-y-2">
+            <div class="flex gap-2">
+              <Input v-model="tagInput" placeholder="输入标签名称后点击增加或回车键添加" class="flex-1 h-8 text-sm" @keydown.enter.prevent="addTag" />
+              <Button type="button" variant="outline" size="sm" class="h-8" @click="addTag">
+                增加
+              </Button>
+            </div>
+            <div v-if="form.tags" class="flex flex-wrap gap-2">
+              <span v-for="tag in form.tags.split(',').filter(Boolean)" :key="tag" class="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md text-xs border">
+                {{ tag }}
+                <button type="button" class="text-muted-foreground hover:text-foreground outline-none" @click.prevent="removeTag(tag)">
+                  <X class="h-3 w-3" />
+                </button>
+              </span>
+            </div>
+          </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-3">
           <Label class="sm:text-right text-sm">源类型</Label>

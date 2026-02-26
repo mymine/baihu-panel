@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Folder, File, ChevronRight, ChevronDown } from 'lucide-vue-next'
+import { Folder, File, ChevronRight, ChevronDown, Trash2, Copy as CopyIcon } from 'lucide-vue-next'
 import type { FileNode } from '@/api'
 
 defineOptions({
@@ -20,6 +20,8 @@ const emit = defineEmits<{
   create: [parentDir: string]
   move: [oldPath: string, newPath: string]
   rename: [path: string]
+  downloadFile: [path: string]
+  duplicate: [path: string]
 }>()
 
 const depth = computed(() => props.depth ?? 0)
@@ -84,13 +86,27 @@ function handleDrop(e: DragEvent) {
       <span v-else class="w-3" />
       <Folder v-if="node.isDir" class="h-3 w-3 text-yellow-500 flex-shrink-0" />
       <File v-else class="h-3 w-3 text-blue-500 flex-shrink-0" />
-      <span class="truncate flex-1">{{ node.name }}</span>
+      <span class="truncate">{{ node.name }}</span>
+      <div v-if="!node.isDir" class="opacity-0 group-hover:opacity-100 flex items-center gap-1 ml-auto shrink-0 pr-1 transition-opacity">
+        <span @click.stop="$emit('duplicate', node.path)" class="cursor-pointer text-muted-foreground hover:text-foreground" title="复制">
+          <CopyIcon class="h-3 w-3" />
+        </span>
+        <span @click.stop="$emit('delete', node.path)" class="cursor-pointer text-destructive hover:text-destructive/80" title="删除">
+          <Trash2 class="h-3 w-3" />
+        </span>
+      </div>
+      <div v-else class="opacity-0 group-hover:opacity-100 flex items-center gap-1 ml-auto shrink-0 pr-1 transition-opacity">
+        <span @click.stop="$emit('delete', node.path)" class="cursor-pointer text-destructive hover:text-destructive/80" title="删除">
+          <Trash2 class="h-3 w-3" />
+        </span>
+      </div>
     </div>
     <template v-if="node.isDir && isExpanded && node.children">
       <FileTreeNode v-for="child in node.children" :key="child.path" :node="child" :expanded-dirs="expandedDirs"
         :selected-path="selectedPath" :depth="depth + 1" @select="$emit('select', $event)"
         @create="$emit('create', $event)" @move="(oldPath, newPath) => $emit('move', oldPath, newPath)"
-        @rename="$emit('rename', $event)" />
+        @rename="$emit('rename', $event)" @delete="$emit('delete', $event)" @download-file="$emit('downloadFile', $event)" 
+        @duplicate="$emit('duplicate', $event)" />
     </template>
   </div>
 </template>

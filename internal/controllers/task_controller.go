@@ -54,6 +54,7 @@ func (tc *TaskController) CreateTask(c *gin.Context) {
 	var req struct {
 		Name        string              `json:"name" binding:"required"`
 		Command     string              `json:"command"`
+		Tags        string              `json:"tags"`
 		Type        string              `json:"type"`
 		Config      string              `json:"config"`
 		Schedule    string              `json:"schedule"`
@@ -90,7 +91,7 @@ func (tc *TaskController) CreateTask(c *gin.Context) {
 		workDir = resolveWorkDir(req.WorkDir)
 	}
 
-	task := tc.taskService.CreateTask(req.Name, req.Command, req.Schedule, req.Timeout, workDir, req.CleanConfig, req.Envs, req.Type, req.Config, req.AgentID, req.Languages, req.TriggerType)
+	task := tc.taskService.CreateTask(req.Name, req.Command, req.Schedule, req.Timeout, workDir, req.CleanConfig, req.Envs, req.Type, req.Config, req.AgentID, req.Languages, req.TriggerType, req.Tags)
 
 	// 如果是 Agent 任务，通知 Agent；否则添加到本地 cron
 	if task.AgentID != nil && *task.AgentID > 0 {
@@ -107,6 +108,8 @@ func (tc *TaskController) GetTasks(c *gin.Context) {
 	name := c.DefaultQuery("name", "")
 	agentIDStr := c.DefaultQuery("agent_id", "")
 
+	tags := c.DefaultQuery("tags", "")
+
 	var agentID *uint
 	if agentIDStr != "" {
 		if id, err := strconv.ParseUint(agentIDStr, 10, 32); err == nil {
@@ -115,7 +118,7 @@ func (tc *TaskController) GetTasks(c *gin.Context) {
 		}
 	}
 
-	tasks, total := tc.taskService.GetTasksWithPagination(p.Page, p.PageSize, name, agentID)
+	tasks, total := tc.taskService.GetTasksWithPagination(p.Page, p.PageSize, name, agentID, tags)
 	utils.PaginatedResponse(c, vo.ToTaskVOListFromModels(tasks), total, p)
 }
 
@@ -152,6 +155,7 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 	var req struct {
 		Name        string              `json:"name"`
 		Command     string              `json:"command"`
+		Tags        string              `json:"tags"`
 		Type        string              `json:"type"`
 		Config      string              `json:"config"`
 		Schedule    string              `json:"schedule"`
@@ -183,7 +187,7 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 		workDir = resolveWorkDir(req.WorkDir)
 	}
 
-	task := tc.taskService.UpdateTask(id, req.Name, req.Command, req.Schedule, req.Timeout, workDir, req.CleanConfig, req.Envs, req.Enabled, req.Type, req.Config, req.AgentID, req.Languages, req.TriggerType)
+	task := tc.taskService.UpdateTask(id, req.Name, req.Command, req.Schedule, req.Timeout, workDir, req.CleanConfig, req.Envs, req.Enabled, req.Type, req.Config, req.AgentID, req.Languages, req.TriggerType, req.Tags)
 	if task == nil {
 		utils.NotFound(c, "任务不存在")
 		return

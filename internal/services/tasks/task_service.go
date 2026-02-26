@@ -12,7 +12,7 @@ func NewTaskService() *TaskService {
 	return &TaskService{}
 }
 
-func (ts *TaskService) CreateTask(name, command, schedule string, timeout int, workDir, cleanConfig, envs, taskType, config string, agentID *uint, languages []map[string]string, triggerType string) *models.Task {
+func (ts *TaskService) CreateTask(name, command, schedule string, timeout int, workDir, cleanConfig, envs, taskType, config string, agentID *uint, languages []map[string]string, triggerType string, tags string) *models.Task {
 	if taskType == "" {
 		taskType = "task"
 	}
@@ -22,6 +22,7 @@ func (ts *TaskService) CreateTask(name, command, schedule string, timeout int, w
 	task := &models.Task{
 		Name:        name,
 		Command:     command,
+		Tags:        tags,
 		Type:        taskType,
 		TriggerType: triggerType,
 		Config:      config,
@@ -48,13 +49,16 @@ func (ts *TaskService) GetTasks() []models.Task {
 }
 
 // GetTasksWithPagination 分页获取任务列表
-func (ts *TaskService) GetTasksWithPagination(page, pageSize int, name string, agentID *uint) ([]models.Task, int64) {
+func (ts *TaskService) GetTasksWithPagination(page, pageSize int, name string, agentID *uint, tags string) ([]models.Task, int64) {
 	var tasks []models.Task
 	var total int64
 
 	query := database.DB.Model(&models.Task{})
 	if name != "" {
 		query = query.Where("name LIKE ?", "%"+name+"%")
+	}
+	if tags != "" {
+		query = query.Where("tags LIKE ?", "%"+tags+"%")
 	}
 	if agentID != nil {
 		query = query.Where("agent_id = ?", *agentID)
@@ -74,13 +78,14 @@ func (ts *TaskService) GetTaskByID(id int) *models.Task {
 	return &task
 }
 
-func (ts *TaskService) UpdateTask(id int, name, command, schedule string, timeout int, workDir, cleanConfig, envs string, enabled bool, taskType, config string, agentID *uint, languages []map[string]string, triggerType string) *models.Task {
+func (ts *TaskService) UpdateTask(id int, name, command, schedule string, timeout int, workDir, cleanConfig, envs string, enabled bool, taskType, config string, agentID *uint, languages []map[string]string, triggerType string, tags string) *models.Task {
 	var task models.Task
 	if err := database.DB.First(&task, id).Error; err != nil {
 		return nil
 	}
 	task.Name = name
 	task.Command = command
+	task.Tags = tags
 	task.Schedule = schedule
 	task.Timeout = timeout
 	task.WorkDir = workDir
