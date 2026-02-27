@@ -141,7 +141,8 @@ COPY docker/docker-entrypoint.sh .
 COPY --from=agent-builder /opt/agent /opt/agent
 
 RUN chmod +x docker-entrypoint.sh \
-    && echo "set encoding=utf-8" >> /etc/vim/vimrc
+    && echo "set encoding=utf-8" >> /etc/vim/vimrc \
+    && ln -sf /app/baihu /usr/local/bin/baihu
 
 EXPOSE 8052
 

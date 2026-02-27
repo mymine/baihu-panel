@@ -57,6 +57,11 @@ log "node: $(node --version 2>&1 | head -n 1) at $(which node)"
 log "npm: $(npm --version 2>&1 | head -n 1) at $(which npm)"
 
 # ============================
+# 将 baihu 注册到全局命令
+# ============================
+ln -sf /app/baihu /usr/local/bin/baihu
+
+# ============================
 # 启动应用
 # ============================
 printf "\n\033[1;32m>>> Environment setup complete. Starting Baihu Server...\033[0m\n\n"
