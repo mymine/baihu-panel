@@ -112,6 +112,12 @@ func (tc *TerminalController) handlePtyMode(conn *websocket.Conn, userID int) {
 
 	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
 
+	// 注入 baihu 命令环境变量
+	if absBinDir, err := filepath.Abs(filepath.Join(constant.DataDir, "bin")); err == nil {
+		pathStr := absBinDir + string(os.PathListSeparator) + os.Getenv("PATH")
+		cmd.Env = append(cmd.Env, "PATH="+pathStr)
+	}
+
 	// 注入环境变量
 	envVars := tc.envService.GetEnvVarsByUserID(userID)
 	for _, env := range envVars {
@@ -180,6 +186,13 @@ func (tc *TerminalController) handlePipeMode(conn *websocket.Conn, userID int) {
 
 	// 注入环境变量
 	cmd.Env = os.Environ()
+
+	// 注入 baihu 命令环境变量
+	if absBinDir, err := filepath.Abs(filepath.Join(constant.DataDir, "bin")); err == nil {
+		pathStr := absBinDir + string(os.PathListSeparator) + os.Getenv("PATH")
+		cmd.Env = append(cmd.Env, "PATH="+pathStr)
+	}
+
 	envVars := tc.envService.GetEnvVarsByUserID(userID)
 	for _, env := range envVars {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", env.Name, env.Value))
@@ -278,4 +291,16 @@ func (tc *TerminalController) ExecuteShellCommand(c *gin.Context) {
 	utils.Success(c, gin.H{
 		"output": string(output),
 	})
+}
+
+// GetCommands 获取所有可用的 cmd 列表及说明
+func (tc *TerminalController) GetCommands(c *gin.Context) {
+	var cmds []map[string]string
+	for _, cmdInfo := range constant.Commands {
+		cmds = append(cmds, map[string]string{
+			"name":        cmdInfo.Name,
+			"description": cmdInfo.Description,
+		})
+	}
+	utils.Success(c, cmds)
 }

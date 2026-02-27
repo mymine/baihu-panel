@@ -4,25 +4,38 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/engigu/baihu-panel/cmd/reposync"
+	"github.com/engigu/baihu-panel/cmd"
 	"github.com/engigu/baihu-panel/internal/bootstrap"
+	"github.com/engigu/baihu-panel/internal/constant"
 )
+
+func printHelp() {
+	fmt.Println("Usage: baihu <command> [arguments]")
+	fmt.Println("Available commands:")
+	for _, info := range constant.Commands {
+		fmt.Printf("  %-12s %s\n", info.Name, info.Description)
+	}
+}
 
 func main() {
 	if len(os.Args) < 2 {
+		printHelp()
+		os.Exit(1)
+	}
+
+	commandName := os.Args[1]
+
+	if commandName == "server" {
 		bootstrap.New().Run()
 		return
 	}
 
-	cmd := os.Args[1]
-	switch cmd {
-	case "server":
-		bootstrap.New().Run()
-	case "reposync":
-		reposync.Run(os.Args[2:])
-	default:
-		fmt.Printf("Unknown command: %s\n", cmd)
-		fmt.Println("Available commands: server, reposync")
-		os.Exit(1)
+	if handler, ok := cmd.Handlers[commandName]; ok {
+		handler(os.Args[2:])
+		return
 	}
+
+	fmt.Printf("Unknown command: %s\n", commandName)
+	printHelp()
+	os.Exit(1)
 }

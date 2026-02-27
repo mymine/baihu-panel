@@ -181,6 +181,7 @@ func Setup(c *Controllers) *gin.Engine {
 			// 终端模块
 			authorized.GET("/terminal/ws", c.Terminal.HandleWebSocket)
 			authorized.POST("/terminal/exec", c.Terminal.ExecuteShellCommand)
+			authorized.GET("/terminal/cmds", c.Terminal.GetCommands)
 
 			// 设置中心模块
 			settings := authorized.Group("/settings")

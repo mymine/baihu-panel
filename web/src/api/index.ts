@@ -256,6 +256,9 @@ export const api = {
     plugins: () => request<string[]>('/mise/plugins'),
     versions: (plugin: string) => request<string[]>(`/mise/versions?plugin=${plugin}`),
     verifyCommand: (plugin: string, version: string) => request<{ command: string }>(`/mise/verify-cmd?plugin=${plugin}&version=${version}`)
+  },
+  terminal: {
+    cmds: () => request<{ name: string, description: string }[]>('/terminal/cmds')
   }
 }
 

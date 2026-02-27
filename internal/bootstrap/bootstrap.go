@@ -3,6 +3,8 @@ package bootstrap
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/engigu/baihu-panel/internal/constant"
 	"github.com/engigu/baihu-panel/internal/database"
@@ -41,6 +43,23 @@ func (a *App) initConfig() {
 	err = os.MkdirAll(constant.ScriptsWorkDir, 0755)
 	if err != nil {
 		return
+	}
+
+	a.setupBaihuBin()
+}
+
+func (a *App) setupBaihuBin() {
+	binDir := filepath.Join(constant.DataDir, "bin")
+	_ = os.MkdirAll(binDir, 0755)
+
+	exe, err := os.Executable()
+	if err == nil {
+		linkPath := filepath.Join(binDir, "baihu")
+		if runtime.GOOS == "windows" {
+			linkPath += ".exe"
+		}
+		os.Remove(linkPath)
+		_ = os.Symlink(exe, linkPath)
 	}
 }
 
