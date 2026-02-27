@@ -172,8 +172,10 @@ func Setup(c *Controllers) *gin.Engine {
 			logs := authorized.Group("/logs")
 			{
 				logs.GET("", c.Log.GetLogs)
+				logs.POST("/clear", c.Log.ClearLogs)
 				logs.GET("/ws", c.LogWS.StreamLog)
 				logs.GET("/:id", c.Log.GetLogDetail)
+				logs.DELETE("/:id", c.Log.DeleteLog)
 			}
 
 			// 终端模块

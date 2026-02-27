@@ -49,7 +49,7 @@ func (ts *TaskService) GetTasks() []models.Task {
 }
 
 // GetTasksWithPagination 分页获取任务列表
-func (ts *TaskService) GetTasksWithPagination(page, pageSize int, name string, agentID *uint, tags string) ([]models.Task, int64) {
+func (ts *TaskService) GetTasksWithPagination(page, pageSize int, name string, agentID *uint, tags string, taskType string) ([]models.Task, int64) {
 	var tasks []models.Task
 	var total int64
 
@@ -59,6 +59,9 @@ func (ts *TaskService) GetTasksWithPagination(page, pageSize int, name string, a
 	}
 	if tags != "" {
 		query = query.Where("tags LIKE ?", "%"+tags+"%")
+	}
+	if taskType != "" {
+		query = query.Where("type = ?", taskType)
 	}
 	if agentID != nil {
 		query = query.Where("agent_id = ?", *agentID)

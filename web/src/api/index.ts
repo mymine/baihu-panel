@@ -58,13 +58,14 @@ export const api = {
       request('/auth/register', { method: 'POST', body: JSON.stringify(data) })
   },
   tasks: {
-    list: (params?: { page?: number; page_size?: number; name?: string; agent_id?: number; tags?: string }) => {
+    list: (params?: { page?: number; page_size?: number; name?: string; agent_id?: number; tags?: string; type?: string }) => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
       if (params?.page_size) query.set('page_size', String(params.page_size))
       if (params?.name) query.set('name', params.name)
       if (params?.tags) query.set('tags', params.tags)
       if (params?.agent_id) query.set('agent_id', String(params.agent_id))
+      if (params?.type) query.set('type', params.type)
       return request<TaskListResponse>(`/tasks?${query}`)
     },
     create: (data: Partial<Task>) => request<Task>('/tasks', { method: 'POST', body: JSON.stringify(data) }),
@@ -106,7 +107,9 @@ export const api = {
       return request<LogListResponse>(`/logs?${query}`)
     },
     get: (id: number) => request<LogDetail>(`/logs/${id}`),
-    detail: (id: number) => request<LogDetail>(`/logs/${id}`)
+    detail: (id: number) => request<LogDetail>(`/logs/${id}`),
+    delete: (id: number) => request(`/logs/${id}`, { method: 'DELETE' }),
+    clear: (taskId?: number) => request('/logs/clear', { method: 'POST', body: JSON.stringify({ task_id: taskId }) })
   },
   dashboard: {
     stats: () => request<Stats>('/stats'),

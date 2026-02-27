@@ -7,6 +7,7 @@ import Pagination from '@/components/Pagination.vue'
 import TaskDialog from './TaskDialog.vue'
 import RepoDialog from './RepoDialog.vue'
 import { Plus, Play, Pencil, Trash2, Search, ScrollText, GitBranch, Terminal, Server, Monitor, X, Loader2, Wifi, WifiOff, Zap, ZapOff, Copy, Tag } from 'lucide-vue-next'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { api, type Agent, type Task } from '@/api'
 import { toast } from 'vue-sonner'
 import { useSiteSettings } from '@/composables/useSiteSettings'
@@ -29,6 +30,7 @@ const deleteTaskId = ref<number | null>(null)
 
 const filterName = ref('')
 const filterTags = ref('')
+const filterType = ref('all')
 const filterAgentId = ref<number | null>(null)
 const currentPage = ref(1)
 const total = ref(0)
@@ -69,6 +71,7 @@ async function loadTasks() {
       page_size: pageSize.value,
       name: filterName.value || undefined,
       tags: filterTags.value || undefined,
+      type: filterType.value === 'all' ? undefined : filterType.value,
       agent_id: filterAgentId.value || undefined
     })
     tasks.value = res.data
@@ -88,6 +91,11 @@ function handleSearch() {
     currentPage.value = 1
     loadTasks()
   }, 300)
+}
+
+function handleTypeChange() {
+  currentPage.value = 1
+  loadTasks()
 }
 
 function handlePageChange(page: number) {
@@ -227,6 +235,18 @@ watch(() => route.query.agent_id, (newVal) => {
           <Tag class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input v-model="filterTags" placeholder="搜索标签..." class="h-9 pl-9 w-full sm:w-32 text-sm"
             @input="handleSearch" />
+        </div>
+        <div class="relative flex-1 sm:flex-none">
+          <Select v-model="filterType" @update:model-value="handleTypeChange">
+            <SelectTrigger class="h-9 w-full sm:w-28 text-sm">
+              <SelectValue placeholder="所有类型" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">所有类型</SelectItem>
+              <SelectItem :value="TASK_TYPE.NORMAL">定时任务</SelectItem>
+              <SelectItem :value="TASK_TYPE.REPO">仓库同步</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div v-if="filterAgentId"
           class="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-md text-sm">

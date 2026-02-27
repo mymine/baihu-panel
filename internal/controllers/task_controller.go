@@ -109,6 +109,7 @@ func (tc *TaskController) GetTasks(c *gin.Context) {
 	agentIDStr := c.DefaultQuery("agent_id", "")
 
 	tags := c.DefaultQuery("tags", "")
+	taskType := c.DefaultQuery("type", "")
 
 	var agentID *uint
 	if agentIDStr != "" {
@@ -118,7 +119,7 @@ func (tc *TaskController) GetTasks(c *gin.Context) {
 		}
 	}
 
-	tasks, total := tc.taskService.GetTasksWithPagination(p.Page, p.PageSize, name, agentID, tags)
+	tasks, total := tc.taskService.GetTasksWithPagination(p.Page, p.PageSize, name, agentID, tags, taskType)
 	utils.PaginatedResponse(c, vo.ToTaskVOListFromModels(tasks), total, p)
 }
 

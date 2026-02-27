@@ -97,3 +97,41 @@ func (lc *LogController) GetLogDetail(c *gin.Context) {
 
 	utils.Success(c, vo.ToTaskLogVO(&log))
 }
+
+func (lc *LogController) ClearLogs(c *gin.Context) {
+	var req struct {
+		TaskID *int `json:"task_id"`
+	}
+	
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
+	query := database.DB.Model(&models.TaskLog{})
+	if req.TaskID != nil && *req.TaskID > 0 {
+		query = query.Where("task_id = ?", *req.TaskID)
+	}
+
+	if err := query.Delete(&models.TaskLog{}).Error; err != nil {
+		utils.ServerError(c, "清空日志失败")
+		return
+	}
+
+	utils.SuccessMsg(c, "日志清空成功")
+}
+
+func (lc *LogController) DeleteLog(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.BadRequest(c, "无效的日志ID")
+		return
+	}
+
+	if err := database.DB.Delete(&models.TaskLog{}, id).Error; err != nil {
+		utils.ServerError(c, "删除日志失败")
+		return
+	}
+
+	utils.SuccessMsg(c, "日志已删除")
+}
