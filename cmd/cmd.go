@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/engigu/baihu-panel/cmd/reposync"
 	"github.com/engigu/baihu-panel/cmd/resetpwd"
+	"github.com/engigu/baihu-panel/cmd/restore"
 )
 
 // CommandHandler 定义命令执行函数
@@ -12,4 +13,5 @@ type CommandHandler func(args []string)
 var Handlers = map[string]CommandHandler{
 	"reposync": reposync.Run,
 	"resetpwd": resetpwd.Run,
+	"restore":  restore.Run,
 }

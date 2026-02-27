@@ -20,4 +20,8 @@ var Commands = []CommandInfo{
 		Name:        "resetpwd",
 		Description: "重置 admin 用户密码（需要二次确认）",
 	},
+	{
+		Name:        "restore",
+		Description: "从本地 zip 文件中全量恢复系统级备份数据",
+	},
 }

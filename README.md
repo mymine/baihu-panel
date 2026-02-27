@@ -564,6 +564,7 @@ nginx -t && nginx -s reload
 baihu server             # 以前台方式启动面板的后台进程服务（面板启动指令）
 baihu reposync           # 供定时任务调用，将远程 Git 仓库的高级特性同步到本地目录中
 baihu resetpwd           # 交互式重置系统 admin 账号密码（密码丢失时可通过进入终端重置）
+baihu restore <file>     # 使用本地的 .zip 备份压缩包文件，一条命令直接全量恢复系统数据
 ```
 
 终端执行 `baihu` 会直接打印内置支持的高级命令帮助列表。
