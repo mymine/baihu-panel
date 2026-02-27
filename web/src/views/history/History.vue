@@ -456,9 +456,6 @@ watch(() => route.query.task_id, (newTaskId) => {
               class="h-6 px-2 text-[10px]" :disabled="isStopping" @click="stopTask">
               {{ isStopping ? '停止中...' : '停止任务' }}
             </Button>
-            <Button v-else variant="outline" size="sm" class="h-7 px-3 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30" @click="confirmDeleteLog(selectedLog.id)">
-              <Trash2 class="h-3.5 w-3.5 mr-1" /> 删除日志
-            </Button>
           </div>
           <div class="flex items-center gap-1">
             <Button variant="ghost" size="icon" class="h-7 w-7 text-muted-foreground hover:text-destructive" title="删除该日志" @click="confirmDeleteLog(selectedLog.id)">
