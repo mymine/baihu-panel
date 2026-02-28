@@ -27,7 +27,7 @@ const statItems = [
   { key: 'envs', label: '环境变量', icon: Variable, route: '/environments' },
   { key: 'logs', label: '日志总数', icon: ScrollText, route: '/history' },
   { key: 'scheduled', label: '调度注册', icon: Clock, route: '/tasks' },
-  { key: 'running', label: '正在运行', icon: Play, route: '/tasks' },
+  { key: 'running', label: '正在运行', icon: Play, route: '/history?status=running' },
 ]
 
 const isDark = ref(document.documentElement.classList.contains('dark'))

@@ -5,6 +5,7 @@ import { TASK_STATUS, TASK_TYPE } from '@/constants'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/components/Pagination.vue'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import LogViewer from './LogViewer.vue'
 import {
   RefreshCw, X, Search, Maximize2, GitBranch, Terminal,
@@ -33,6 +34,7 @@ const logs = ref<TaskLog[]>([])
 const selectedLog = ref<TaskLog | null>(null)
 const filterKeyword = ref('')
 const filterTaskId = ref<number | undefined>(undefined)
+const filterStatus = ref<string | undefined>(undefined)
 const currentPage = ref(1)
 const total = ref(0)
 
@@ -60,7 +62,7 @@ const decompressedOutput = computed(() => {
 
 async function loadLogs() {
   try {
-    const params: { page: number; page_size: number; task_id?: number; task_name?: string } = {
+    const params: { page: number; page_size: number; task_id?: number; task_name?: string; status?: string } = {
       page: currentPage.value,
       page_size: pageSize.value
     }
@@ -69,6 +71,9 @@ async function loadLogs() {
     }
     if (filterKeyword.value.trim()) {
       params.task_name = filterKeyword.value.trim()
+    }
+    if (filterStatus.value && filterStatus.value !== 'all') {
+      params.status = filterStatus.value
     }
     const response = await api.logs.list(params)
     logs.value = response.data
@@ -84,6 +89,11 @@ function handleSearch() {
     currentPage.value = 1
     loadLogs()
   }, 300)
+}
+
+function handleStatusChange() {
+  currentPage.value = 1
+  loadLogs()
 }
 
 function handlePageChange(page: number) {
@@ -278,20 +288,25 @@ function getTaskTypeTitle(type: string) {
 }
 
 onMounted(() => {
-  // 从 URL 读取 task_id 参数
+  // 从 URL 读取参数
   const taskIdParam = route.query.task_id
   if (taskIdParam) {
     filterTaskId.value = Number(taskIdParam)
+  }
+  const statusParam = route.query.status
+  if (statusParam) {
+    filterStatus.value = String(statusParam)
   }
   loadLogs()
 })
 
 // 监听路由变化
-watch(() => route.query.task_id, (newTaskId) => {
-  filterTaskId.value = newTaskId ? Number(newTaskId) : undefined
+watch(() => route.query, (newQuery) => {
+  filterTaskId.value = newQuery.task_id ? Number(newQuery.task_id) : undefined
+  filterStatus.value = newQuery.status ? String(newQuery.status) : undefined
   currentPage.value = 1
   loadLogs()
-})
+}, { deep: true })
 </script>
 
 <template>
@@ -304,8 +319,23 @@ watch(() => route.query.task_id, (newTaskId) => {
       <div class="flex items-center gap-2">
         <div class="relative flex-1 sm:flex-none">
           <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input v-model="filterKeyword" placeholder="搜索任务..." class="h-9 pl-9 w-full sm:w-56 text-sm"
+          <Input v-model="filterKeyword" placeholder="搜索任务..." class="h-9 pl-9 w-full sm:w-40 md:w-56 text-sm"
             @input="handleSearch" />
+        </div>
+        <div class="relative flex-1 sm:flex-none">
+          <Select v-model="filterStatus" @update:model-value="handleStatusChange">
+            <SelectTrigger class="h-9 w-full sm:w-28 text-sm">
+              <SelectValue placeholder="状态" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">所有状态</SelectItem>
+              <SelectItem value="running">正在运行</SelectItem>
+              <SelectItem value="success">成功</SelectItem>
+              <SelectItem value="failed">失败</SelectItem>
+              <SelectItem value="timeout">超时</SelectItem>
+              <SelectItem value="cancelled">取消</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <Button variant="outline" size="icon" class="h-9 w-9 shrink-0" @click="loadLogs" title="刷新">
           <RefreshCw class="h-4 w-4" />

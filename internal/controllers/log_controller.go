@@ -21,6 +21,7 @@ func (lc *LogController) GetLogs(c *gin.Context) {
 	p := utils.ParsePagination(c)
 	taskID, _ := strconv.Atoi(c.DefaultQuery("task_id", "0"))
 	taskName := c.DefaultQuery("task_name", "")
+	status := c.DefaultQuery("status", "")
 
 	var logs []models.TaskLog
 	var total int64
@@ -28,6 +29,9 @@ func (lc *LogController) GetLogs(c *gin.Context) {
 	query := database.DB.Model(&models.TaskLog{})
 	if taskID > 0 {
 		query = query.Where("task_id = ?", taskID)
+	}
+	if status != "" {
+		query = query.Where("status = ?", status)
 	}
 
 	// 按任务名称过滤

@@ -98,12 +98,13 @@ export const api = {
     results: () => request('/execute/results')
   },
   logs: {
-    list: (params?: { page?: number; page_size?: number; task_id?: number; task_name?: string }) => {
+    list: (params?: { page?: number; page_size?: number; task_id?: number; task_name?: string; status?: string }) => {
       const query = new URLSearchParams()
       if (params?.page) query.set('page', String(params.page))
       if (params?.page_size) query.set('page_size', String(params.page_size))
       if (params?.task_id) query.set('task_id', String(params.task_id))
       if (params?.task_name) query.set('task_name', params.task_name)
+      if (params?.status) query.set('status', params.status)
       return request<LogListResponse>(`/logs?${query}`)
     },
     get: (id: number) => request<LogDetail>(`/logs/${id}`),
