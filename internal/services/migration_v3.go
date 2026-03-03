@@ -116,7 +116,8 @@ func RunMigrationV3() error {
 		if err != nil {
 			return fmt.Errorf("自动备份失败，流程终止: %v", err)
 		}
-		newPath := filepath.Join(backupDir, fmt.Sprintf("migration_v3_backup_%s.zip", filepath.Base(zipPath)))
+		baseName := strings.TrimSuffix(filepath.Base(zipPath), ".zip")
+		newPath := filepath.Join(backupDir, fmt.Sprintf("migration_v3_backup_%s.zip", baseName))
 		os.Rename(zipPath, newPath)
 		logger.Infof("[MigrationV3] 备份成功: %s", newPath)
 	}
@@ -263,7 +264,7 @@ func performHardMigration(db *gorm.DB, mappings map[string]map[uint]string) erro
 				if nid, exists := mappings[t.EntityName][uid]; exists {
 					row["id"] = nid
 				} else {
-					row["id"] = utils.GenerateID() 
+					row["id"] = utils.GenerateID()
 				}
 			}
 
@@ -328,13 +329,20 @@ func performHardMigration(db *gorm.DB, mappings map[string]map[uint]string) erro
 
 // 辅助函数：解析各种数字 ID
 func parseUint(val interface{}) uint {
-	if val == nil { return 0 }
+	if val == nil {
+		return 0
+	}
 	switch v := val.(type) {
-	case uint: return v
-	case int64: return uint(v)
-	case int: return uint(v)
-	case uint64: return uint(v)
-	case float64: return uint(v)
+	case uint:
+		return v
+	case int64:
+		return uint(v)
+	case int:
+		return uint(v)
+	case uint64:
+		return uint(v)
+	case float64:
+		return uint(v)
 	case string:
 		var u uint
 		fmt.Sscanf(v, "%d", &u)
@@ -346,12 +354,18 @@ func parseUint(val interface{}) uint {
 // 辅助函数：字段名转列名
 func getColumnName(field string) string {
 	switch field {
-	case "AgentID": return "agent_id"
-	case "TaskID": return "task_id"
-	case "UserID": return "user_id"
-	case "LogID": return "log_id"
-	case "Envs": return "envs"
-	default: return strings.ToLower(field)
+	case "AgentID":
+		return "agent_id"
+	case "TaskID":
+		return "task_id"
+	case "UserID":
+		return "user_id"
+	case "LogID":
+		return "log_id"
+	case "Envs":
+		return "envs"
+	default:
+		return strings.ToLower(field)
 	}
 }
 
@@ -361,7 +375,9 @@ func transformMultiIDs(oldStr string, parentEntity string, mappings map[string]m
 	var result []string
 	for _, p := range parts {
 		p = strings.TrimSpace(p)
-		if p == "" { continue }
+		if p == "" {
+			continue
+		}
 		if len(p) == 20 && !utils.IsNumeric(p) {
 			result = append(result, p) // 已经是 xid，保留
 			continue
@@ -390,7 +406,9 @@ func dropOldIndexes(db *gorm.DB, tableName string) {
 			indexNames = append(indexNames, idx.Name)
 		}
 	case "mysql":
-		var indexes []struct{ KeyName string `gorm:"column:Key_name"` }
+		var indexes []struct {
+			KeyName string `gorm:"column:Key_name"`
+		}
 		db.Raw("SHOW INDEX FROM `" + tableName + "`").Scan(&indexes)
 		seen := make(map[string]bool)
 		for _, idx := range indexes {
@@ -400,7 +418,9 @@ func dropOldIndexes(db *gorm.DB, tableName string) {
 			}
 		}
 	case "postgres":
-		var indexes []struct{ IndexName string `gorm:"column:indexname"` }
+		var indexes []struct {
+			IndexName string `gorm:"column:indexname"`
+		}
 		db.Raw("SELECT indexname FROM pg_indexes WHERE tablename=?", tableName).Scan(&indexes)
 		for _, idx := range indexes {
 			if !strings.HasSuffix(idx.IndexName, "_pkey") {
