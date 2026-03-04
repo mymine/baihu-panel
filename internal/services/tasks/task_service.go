@@ -113,27 +113,13 @@ func (ts *TaskService) UpdateTask(id string, name, command, schedule string, tim
 	if triggerType != "" {
 		task.TriggerType = triggerType
 	}
-	updates := map[string]interface{}{
-		"name":           name,
-		"command":        command,
-		"tags":           tags,
-		"schedule":       schedule,
-		"timeout":        timeout,
-		"work_dir":       workDir,
-		"clean_config":   cleanConfig,
-		"envs":           envs,
-		"enabled":        enabled,
-		"agent_id":       agentID,
-		"languages":      languages,
-		"retry_count":    retryCount,
-		"retry_interval": retryInterval,
-		"random_range":   randomRange,
-		"type":           task.Type,
-		"trigger_type":   task.TriggerType,
-		"next_run":       task.NextRun,
-		"config":         config,
-	}
-	database.DB.Model(&task).Updates(updates)
+
+	database.DB.Model(&task).Select(
+		"Name", "Command", "Tags", "Schedule", "Timeout", "WorkDir",
+		"CleanConfig", "Envs", "Enabled", "AgentID", "Languages",
+		"RetryCount", "RetryInterval", "RandomRange", "Type",
+		"TriggerType", "Config",
+	).Updates(&task)
 	return &task
 }
 
