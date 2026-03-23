@@ -147,7 +147,10 @@ COPY docker/docker-entrypoint.sh .
 # Copy agent binaries to /opt/agent
 COPY --from=agent-builder /opt/agent /opt/agent
 
+COPY docker/mise-hook.sh /etc/profile.d/mise-hook.sh
+
 RUN chmod +x docker-entrypoint.sh \
+    && cat /etc/profile.d/mise-hook.sh >> /etc/bash.bashrc \
     && echo "set encoding=utf-8" >> /etc/vim/vimrc \
     && ln -sf /app/baihu /usr/local/bin/baihu
 

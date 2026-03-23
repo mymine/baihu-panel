@@ -20,6 +20,9 @@ RUN sed -i 's@deb.debian.org@mirrors.tuna.tsinghua.edu.cn@g' /etc/apt/sources.li
     && apt-get install -y --no-install-recommends $BUILD_DEPS \
     && rm -rf /var/lib/apt/lists/*
 
+COPY docker/mise-hook.sh /etc/profile.d/mise-hook.sh
+RUN cat /etc/profile.d/mise-hook.sh >> /etc/bash.bashrc
+
 RUN go env -w GOPROXY=https://goproxy.cn,direct
 
 ENV MISE_GLOBAL_DIR=/opt/mise-dev
