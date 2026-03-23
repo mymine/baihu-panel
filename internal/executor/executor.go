@@ -75,21 +75,6 @@ func Execute(ctx context.Context, req Request, stdout, stderr io.Writer) (*Resul
 	return ExecuteWithHooks(ctx, req, stdout, stderr, nil)
 }
 
-// injectMiseEnvs 隐式且静默地解析包含特定环境（如 node）的全局路径，并将其注入为环境变量
-func injectMiseEnvs(req *Request) {
-	if !req.UseMise {
-		return
-	}
-	for _, lang := range req.Languages {
-		if lang["name"] == "node" {
-			if nodePath := utils.GetMiseNodePath(lang["version"]); nodePath != "" {
-				req.Envs = append(req.Envs, "NODE_PATH="+nodePath)
-			}
-			break
-		}
-	}
-}
-
 // ExecuteWithHooks 执行命令（带钩子支持）
 func ExecuteWithHooks(ctx context.Context, req Request, stdout, stderr io.Writer, hooks Hooks) (*Result, error) {
 	start := time.Now()
@@ -128,11 +113,9 @@ func ExecuteWithHooks(ctx context.Context, req Request, stdout, stderr io.Writer
 	execCtx, cancel := context.WithTimeout(ctx, time.Duration(timeout)*time.Minute)
 	defer cancel()
 
-	// 隐式且静默地获取包含 node 环境的全局路径，并注入环境变量 (带极速缓存)
-	injectMiseEnvs(&req)
-
 	// 如果指定使用 mise，则预先构建好带 mise 的命令，这样 PreExecute 记录的就是完整命令
 	if req.UseMise {
+		utils.InjectNodePath(&req.Envs, req.Languages)
 		req.Command = utils.BuildMiseCommand(req.Command, req.Languages)
 		req.UseMise = false
 	}

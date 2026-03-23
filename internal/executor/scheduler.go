@@ -366,6 +366,8 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 
 	// 如果指定使用 mise，则预先构建好带 mise 的命令，这样 OnTaskExecuting 记录的就是完整命令
 	if req.UseMise {
+		// 先注入 NODE_PATH (由于调度器会把 UseMise 置为 false，所以必须在这里提前处理)
+		utils.InjectNodePath(&req.Envs, req.Languages)
 		req.Command = utils.BuildMiseCommand(req.Command, req.Languages)
 		req.UseMise = false
 	}

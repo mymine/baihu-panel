@@ -19,7 +19,7 @@ func GetMiseNodePath(version string) string {
 	}
 
 	cmd := exec.Command("mise", "where", "node@"+version)
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	if err == nil {
 		nodeDir := strings.TrimSpace(string(out))
 		if nodeDir != "" {
@@ -30,6 +30,18 @@ func GetMiseNodePath(version string) string {
 	}
 
 	return ""
+}
+
+// InjectNodePath 检查语言环境中是否有 node，如果有则自动获取并注入 NODE_PATH 到环境变量切片中
+func InjectNodePath(envs *[]string, languages []map[string]string) {
+	for _, lang := range languages {
+		if lang["name"] == "node" {
+			if nodePath := GetMiseNodePath(lang["version"]); nodePath != "" {
+				*envs = append(*envs, "NODE_PATH="+nodePath)
+			}
+			break
+		}
+	}
 }
 
 // BuildMiseCommand 构建多语言 mise 执行命令 (字符串形式)
