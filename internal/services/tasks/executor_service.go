@@ -456,7 +456,7 @@ func (es *ExecutorService) ExecuteDispatcher(ctx context.Context, req *executor.
 	// 远程任务
 	if task.AgentID != nil && *task.AgentID != "" {
 		// 将请求中已包含的环境变量（已合并）传递给 Agent
-		return es.ExecuteRemoteForScheduler(task, req.LogID, executor.FormatEnvVars(req.Envs))
+		return es.ExecuteRemoteForScheduler(task, req.LogID, executor.FormatEnvVars(req.Envs), req.Secrets)
 	}
 
 	// 本地任务
@@ -859,7 +859,7 @@ func (es *ExecutorService) RemoveRunningGo(taskID string, goid int64) {
 }
 
 // ExecuteRemoteForScheduler 供 Scheduler 调用，执行远程任务并等待结果
-func (es *ExecutorService) ExecuteRemoteForScheduler(task *models.Task, logID string, envs string) (*executor.Result, error) {
+func (es *ExecutorService) ExecuteRemoteForScheduler(task *models.Task, logID string, envs string, secrets []string) (*executor.Result, error) {
 	agentID := *task.AgentID
 	logger.Infof("[Executor] 远程执行任务 #%s: %s (Agent #%s, LogID: %s)", task.ID, task.Name, agentID, logID)
 
@@ -885,6 +885,7 @@ func (es *ExecutorService) ExecuteRemoteForScheduler(task *models.Task, logID st
 		"task_id": task.ID,
 		"log_id":  logID,
 		"envs":    envs,
+		"secrets": secrets,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("发送执行命令失败: %v", err)

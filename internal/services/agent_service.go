@@ -335,10 +335,11 @@ func (s *AgentService) GetTasks(agentID string) []models.AgentTask {
 			}
 		}
 
+		var secrets []string
 		if allEnvs {
-			envVars = envService.GetAllEnvVars()
+			envVars, secrets = envService.GetAllEnvVarsAndSecrets()
 		} else if string(task.Envs) != "" {
-			envVars = envService.GetEnvVarsByIDs(string(task.Envs))
+			envVars, secrets = envService.GetEnvVarsAndSecretsByIDs(string(task.Envs))
 		}
 
 		envVarsStr := executor.FormatEnvVars(envVars)
@@ -353,6 +354,7 @@ func (s *AgentService) GetTasks(agentID string) []models.AgentTask {
 			Envs:        envVarsStr,
 			Languages:   []map[string]string(task.Languages),
 			RandomRange: task.RandomRange,
+			Secrets:     secrets,
 			Enabled:     task.Enabled,
 		}
 	}
