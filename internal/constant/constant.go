@@ -123,7 +123,7 @@ const (
 	// Agent 状态
 	AgentStatusOnline  = "online"
 	AgentStatusOffline = "offline"
-	
+
 	// AppLog 分类
 	LogCategoryDefault      = "default"
 	LogCategorySystemNotice = "system_notice"
@@ -148,6 +148,20 @@ const (
 
 // TablePrefix 表前缀，从配置文件读取
 var TablePrefix string
+
+// Runtime 数据库配置快照，用于需要单独启动内部子进程（如 reposync）时显式透传数据库连接信息，
+// 避免主进程启动阶段清理环境变量后，子进程意外回退到默认 sqlite 配置。
+var (
+	RuntimeDBType        string
+	RuntimeDBHost        string
+	RuntimeDBPort        int
+	RuntimeDBUser        string
+	RuntimeDBPassword    string
+	RuntimeDBName        string
+	RuntimeDBPath        string
+	RuntimeDBDSN         string
+	RuntimeDBTablePrefix string
+)
 
 // Secret JWT和密码salt密钥，运行中自动从数据库加载
 var Secret string

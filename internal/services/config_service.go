@@ -11,7 +11,7 @@ import (
 )
 
 type ServerConfig struct {
-	Port      int    `ini:"port"`
+	Port         int    `ini:"port"`
 	Host         string `ini:"host"`
 	URLPrefix    string `ini:"url_prefix"`
 	PprofEnabled bool   `ini:"pprof_enabled"`
@@ -125,6 +125,15 @@ func LoadConfig(path string) (*AppConfig, error) {
 
 	// 设置表前缀到 constant 包
 	constant.TablePrefix = Config.Database.TablePrefix
+	constant.RuntimeDBType = Config.Database.Type
+	constant.RuntimeDBHost = Config.Database.Host
+	constant.RuntimeDBPort = Config.Database.Port
+	constant.RuntimeDBUser = Config.Database.User
+	constant.RuntimeDBPassword = Config.Database.Password
+	constant.RuntimeDBName = Config.Database.DBName
+	constant.RuntimeDBPath = Config.Database.Path
+	constant.RuntimeDBDSN = Config.Database.DSN
+	constant.RuntimeDBTablePrefix = Config.Database.TablePrefix
 
 	// 暂存旧的 Secret，不再直接给 constant 赋值（改为到 settings 初始化时判断）
 	// constant.Secret = Config.Security.Secret
