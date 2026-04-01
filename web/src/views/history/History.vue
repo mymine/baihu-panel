@@ -62,8 +62,9 @@ let logSocket: WebSocket | null = null
 import { decompressFromBase64 } from '@/utils/decompress'
 
 const decompressedOutput = computed(() => {
-  if (!wsContent.value) return '无输出'
-  return decompressFromBase64(wsContent.value)
+  if (!wsContent.value) return ''
+  const decoded = decompressFromBase64(wsContent.value)
+  return decoded
 })
 
 async function loadLogs() {
@@ -581,9 +582,31 @@ watch(() => route.query, (newQuery) => {
               <Maximize2 class="h-3.5 w-3.5" />
             </Button>
           </div>
-          <div class="flex-1 overflow-auto bg-black/5 dark:bg-white/5 min-h-[160px]">
-            <div class="p-4 text-xs font-mono whitespace-pre-wrap break-all log-pre leading-relaxed"><Ansi>{{ decompressedOutput }}</Ansi></div>
-            <div v-if="isWsLoading" class="p-4 text-sm text-muted-foreground italic">连接中...</div>
+          <div class="flex-1 overflow-auto bg-black/5 dark:bg-white/5 min-h-[240px] flex flex-col">
+            <template v-if="isWsLoading">
+              <div class="flex-1 flex flex-col items-center justify-center p-8 select-none">
+                <div class="relative w-12 h-12 mb-4">
+                  <div class="absolute inset-0 rounded-full border-2 border-primary/10"></div>
+                  <div class="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                </div>
+                <span class="text-sm text-muted-foreground font-medium animate-pulse">正在获取日志内容</span>
+                <p class="text-[10px] text-muted-foreground/50 mt-1.5 uppercase tracking-wider">Establishing connection...</p>
+              </div>
+            </template>
+            <template v-else-if="!decompressedOutput.trim()">
+              <div class="flex-1 flex flex-col items-center justify-center p-8 select-none">
+                <div class="w-12 h-12 rounded-2xl bg-muted/30 flex items-center justify-center mb-4 border border-muted-foreground/5">
+                  <AlertCircle class="h-6 w-6 text-muted-foreground/40" />
+                </div>
+                <span class="text-sm text-muted-foreground font-medium">无输出内容</span>
+                <p class="text-[11px] text-muted-foreground/50 mt-1">此任务执行期间未产生标准输出日志</p>
+              </div>
+            </template>
+            <template v-else>
+              <div class="p-4 text-xs font-mono whitespace-pre-wrap break-all log-pre leading-relaxed">
+                <Ansi>{{ decompressedOutput }}</Ansi>
+              </div>
+            </template>
           </div>
         </div>
       </div>

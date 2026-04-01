@@ -2,7 +2,7 @@
 import { ref, watch, onUnmounted, nextTick } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { X, Search } from 'lucide-vue-next'
+import { X, Search, AlertCircle } from 'lucide-vue-next'
 import Ansi from 'ansi-to-vue3'
 
 const props = defineProps<{
@@ -111,8 +111,17 @@ onUnmounted(() => {
             </Button>
           </div>
         </div>
-        <div ref="scrollContainer" class="flex-1 overflow-auto bg-black/5 dark:bg-white/5" @scroll="handleScroll">
-          <div class="p-3 sm:p-4 text-xs font-mono whitespace-pre-wrap break-all leading-relaxed"><Ansi>{{ content }}</Ansi></div>
+        <div ref="scrollContainer" class="flex-1 overflow-auto bg-black/5 dark:bg-white/5 flex flex-col" @scroll="handleScroll">
+          <div v-if="!content.trim()" class="flex-1 flex flex-col items-center justify-center p-8 select-none text-center">
+            <div class="w-16 h-16 rounded-3xl bg-muted/20 flex items-center justify-center mb-6 border border-muted-foreground/10 mx-auto">
+              <AlertCircle class="h-8 w-8 text-muted-foreground/20" />
+            </div>
+            <span class="text-base text-muted-foreground font-semibold">未检测到输出内容</span>
+            <p class="text-xs text-muted-foreground/40 mt-2 max-w-[280px] leading-relaxed mx-auto">
+              此任务已执行完毕，但在标准输出（Stdout）和错误输出（Stderr）通道中均未捕获到任何有效数据。
+            </p>
+          </div>
+          <div v-else class="p-3 sm:p-4 text-xs font-mono whitespace-pre-wrap break-all leading-relaxed"><Ansi>{{ content }}</Ansi></div>
         </div>
       </div>
     </div>
