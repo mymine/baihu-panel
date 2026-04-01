@@ -1075,68 +1075,9 @@ func (es *ExecutorService) ResolvePath(path string) string {
 }
 
 func buildRepoCommandEnvPrefix() string {
-	absConfig, err := filepath.Abs(constant.ConfigPath)
-	if err != nil {
-		absConfig = constant.ConfigPath
-	}
-
-	absScriptsDir := resolveAbsScriptsDir()
-	parts := []string{
-		shellEnvAssignment("BH_CONFIG_PATH", absConfig),
-		shellEnvAssignment("BH_SCRIPTS_DIR", absScriptsDir),
-	}
-
-	appendIfSet := func(key string, value string) {
-		if strings.TrimSpace(value) == "" {
-			return
-		}
-		parts = append(parts, shellEnvAssignment(key, value))
-	}
-
-	appendIfSet("BH_DB_TYPE", constant.RuntimeDBType)
-	appendIfSet("BH_DB_HOST", constant.RuntimeDBHost)
-	if constant.RuntimeDBPort > 0 {
-		parts = append(parts, shellEnvAssignment("BH_DB_PORT", fmt.Sprintf("%d", constant.RuntimeDBPort)))
-	}
-	appendIfSet("BH_DB_USER", constant.RuntimeDBUser)
-	appendIfSet("BH_DB_PASSWORD", constant.RuntimeDBPassword)
-	appendIfSet("BH_DB_NAME", constant.RuntimeDBName)
-	appendIfSet("BH_DB_PATH", constant.RuntimeDBPath)
-	appendIfSet("BH_DB_DSN", constant.RuntimeDBDSN)
-	appendIfSet("BH_DB_TABLE_PREFIX", constant.RuntimeDBTablePrefix)
-
-	return strings.Join(parts, " ") + " "
-}
-
-func shellEnvAssignment(key, value string) string {
-	return key + "='" + strings.ReplaceAll(value, "'", "'\\''") + "'"
+	return utils.BuildShellEnvPrefix(utils.BuildRuntimeProcessEnv())
 }
 
 func resolveAbsScriptsDir() string {
-	if scriptsDir := os.Getenv("BH_SCRIPTS_DIR"); scriptsDir != "" {
-		if filepath.IsAbs(scriptsDir) {
-			return filepath.Clean(scriptsDir)
-		}
-		if absScriptsDir, err := filepath.Abs(scriptsDir); err == nil {
-			return absScriptsDir
-		}
-		return filepath.Clean(scriptsDir)
-	}
-
-	if configPath := os.Getenv("BH_CONFIG_PATH"); configPath != "" {
-		if !filepath.IsAbs(configPath) {
-			if absConfigPath, err := filepath.Abs(configPath); err == nil {
-				configPath = absConfigPath
-			}
-		}
-
-		projectRoot := filepath.Dir(filepath.Dir(configPath))
-		return filepath.Clean(filepath.Join(projectRoot, constant.ScriptsWorkDir))
-	}
-
-	if absScriptsDir, err := filepath.Abs(constant.ScriptsWorkDir); err == nil {
-		return absScriptsDir
-	}
-
-	return filepath.Clean(constant.ScriptsWorkDir)
+	return utils.ResolveAbsScriptsDir()
 }

@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"encoding/json"
 	"bufio"
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -89,7 +89,6 @@ func (tc *TerminalController) HandleWebSocket(c *gin.Context) {
 	if userID == "" {
 		userID = "1" // 兜底
 	}
-
 	if runtime.GOOS == "windows" {
 		tc.handlePipeMode(conn, userID)
 	} else {
@@ -108,17 +107,7 @@ func (tc *TerminalController) handlePtyMode(conn *websocket.Conn, userID string)
 		cmd.Dir = absDir
 	}
 
-	cmd.Env = append(os.Environ(), "TERM=xterm-256color")
-
-	// 注入 baihu 命令环境变量
-	if absBinDir, err := filepath.Abs(filepath.Join(constant.DataDir, "bin")); err == nil {
-		pathStr := absBinDir + string(os.PathListSeparator) + os.Getenv("PATH")
-		cmd.Env = append(cmd.Env, "PATH="+pathStr)
-	}
-
-	// 注入环境变量（支持同名合并）
-	envVars := tc.envService.GetFormattedEnvVarsByUserID(userID)
-	cmd.Env = append(cmd.Env, envVars...)
+	cmd.Env = tc.buildTerminalEnv(userID, "TERM=xterm-256color")
 
 	ptmx, err := pty.Start(cmd)
 	if err != nil {
@@ -195,17 +184,7 @@ func (tc *TerminalController) handlePipeMode(conn *websocket.Conn, userID string
 	}
 
 	// 注入环境变量
-	cmd.Env = os.Environ()
-
-	// 注入 baihu 命令环境变量
-	if absBinDir, err := filepath.Abs(filepath.Join(constant.DataDir, "bin")); err == nil {
-		pathStr := absBinDir + string(os.PathListSeparator) + os.Getenv("PATH")
-		cmd.Env = append(cmd.Env, "PATH="+pathStr)
-	}
-
-	// 注入环境变量（支持同名合并）
-	envVars := tc.envService.GetFormattedEnvVarsByUserID(userID)
-	cmd.Env = append(cmd.Env, envVars...)
+	cmd.Env = tc.buildTerminalEnv(userID)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -303,6 +282,11 @@ func (tc *TerminalController) ExecuteShellCommand(c *gin.Context) {
 	}
 
 	cmd := utils.NewShellCommandCmd(req.Command)
+	userID := c.GetString("userID")
+	if userID == "" {
+		userID = "1" // 与 WebSocket 终端保持一致，保留原有兜底行为
+	}
+	cmd.Env = tc.buildTerminalEnv(userID)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -316,6 +300,27 @@ func (tc *TerminalController) ExecuteShellCommand(c *gin.Context) {
 	utils.Success(c, gin.H{
 		"output": string(output),
 	})
+}
+
+func (tc *TerminalController) buildTerminalEnv(userID string, extraEnvs ...string) []string {
+	env := os.Environ()
+	env = append(env, extraEnvs...)
+
+	// 注入 baihu 命令运行时路径与配置，保证在终端里手动执行 baihu 子命令时
+	// 仍然能连接到与主服务一致的数据库，而不是回退到默认 sqlite。
+	if absBinDir, err := filepath.Abs(filepath.Join(constant.DataDir, "bin")); err == nil {
+		pathStr := absBinDir + string(os.PathListSeparator) + os.Getenv("PATH")
+		env = append(env, "PATH="+pathStr)
+	}
+	env = append(env, utils.BuildRuntimeProcessEnv()...)
+
+	// 注入环境变量（支持同名合并）
+	if tc.envService != nil {
+		envVars := tc.envService.GetFormattedEnvVarsByUserID(userID)
+		env = append(env, envVars...)
+	}
+
+	return env
 }
 
 // GetCommands 获取所有可用的 cmd 列表及说明
