@@ -248,33 +248,35 @@ onUnmounted(() => {
 
 
 <template>
-  <div class="space-y-4">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Agent 管理</h2>
-        <p class="text-muted-foreground text-sm">管理远程执行代理</p>
-      </div>
-      <div class="flex items-center gap-2 w-full md:w-auto">
-        <div class="relative flex-1 sm:flex-none">
-          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input v-model="searchQuery" placeholder="搜索..." class="h-9 pl-8 w-full sm:w-40 md:w-48 text-sm" />
-        </div>
-        <Button variant="outline" size="sm" class="h-9 shrink-0" @click="openDownloadDialog">
-          <Download class="h-4 w-4 sm:mr-1.5" /> <span class="hidden sm:inline">下载</span>
-        </Button>
-        <Button variant="outline" size="icon" class="h-9 w-9 shrink-0" @click="loadAgents" :disabled="loading">
-          <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': loading }" />
-        </Button>
-      </div>
-    </div>
-
+  <div class="space-y-6">
     <Tabs v-model="activeTab">
-      <TabsList class="w-full grid grid-cols-2">
-        <TabsTrigger value="agents">Agent 列表</TabsTrigger>
-        <TabsTrigger value="regcodes">
-          <Ticket class="h-4 w-4 mr-1" />令牌
-        </TabsTrigger>
-      </TabsList>
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold tracking-tight">Agent 管理</h2>
+          <p class="text-muted-foreground text-sm">管理远程执行代理</p>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <div class="flex w-full sm:w-auto items-center gap-2">
+            <div class="relative flex-1 sm:flex-none">
+              <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input v-model="searchQuery" placeholder="搜索..." class="h-9 pl-9 w-full sm:w-40 md:w-48 text-sm" />
+            </div>
+            <Button variant="outline" size="sm" class="h-9 shrink-0" @click="openDownloadDialog">
+              <Download class="h-4 w-4 sm:mr-1.5" /> <span class="hidden sm:inline">下载</span>
+            </Button>
+            <Button variant="outline" size="icon" class="h-9 w-9 shrink-0" @click="loadAgents" :disabled="loading">
+              <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': loading }" />
+            </Button>
+          </div>
+          <TabsList class="grid w-full grid-cols-2 sm:w-[180px] h-9 shrink-0">
+            <TabsTrigger value="agents" class="text-sm">Agent 列表</TabsTrigger>
+            <TabsTrigger value="regcodes" class="text-sm">
+              <Ticket class="h-3.5 w-3.5 mr-1" />
+              <span>令牌</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+      </div>
 
       <TabsContent value="agents" class="mt-4">
         <div class="rounded-lg border bg-card overflow-x-auto">
