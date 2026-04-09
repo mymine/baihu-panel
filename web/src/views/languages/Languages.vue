@@ -400,7 +400,7 @@ onMounted(() => {
                         </div>
                     </div>
 
-                    <div class="divide-y max-h-[600px] overflow-y-auto min-h-[200px]">
+                    <div class="max-h-[700px] overflow-y-auto min-h-[200px] p-3 sm:p-4">
                         <div v-if="loading && languages.length === 0" class="text-center py-12 text-muted-foreground">
                             <Loader2 class="h-8 w-8 animate-spin mx-auto mb-2 opacity-20" />
                             正在扫描运行环境...
@@ -410,76 +410,82 @@ onMounted(() => {
                             <Globe class="h-12 w-12 mx-auto mb-2 opacity-10" />
                             {{ searchQuery ? '未找到匹配的语言' : '未发现已安装的语言' }}
                         </div>
-                        <template v-else>
+                        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             <div v-for="(lang, index) in filteredLanguages" :key="lang.plugin + lang.version"
-                                class="flex flex-col sm:flex-row sm:items-center px-4 py-3 hover:bg-muted/30 transition-colors gap-3 sm:gap-4 relative group group/item">
-                                <!-- 序号与基础信息 (左侧/顶部) -->
-                                <div class="flex items-center gap-3 overflow-hidden flex-1">
-                                    <div class="flex items-center justify-center w-8 shrink-0">
-                                        <span class="text-xs font-mono text-muted-foreground/60 tabular-nums">#{{
-                                            filteredLanguages.length - index }}</span>
-                                    </div>
-                                    <div
-                                        class="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary uppercase overflow-hidden shrink-0 border border-primary/10 shadow-sm">
-                                        <template v-if="getLangIcon(lang.plugin)">
-                                            <div class="w-full h-full bg-white/95 p-1.5 flex items-center justify-center">
-                                                <img :src="getLangIcon(lang.plugin)" :alt="lang.plugin"
-                                                    class="w-full h-full object-contain" />
+                                class="relative group/item flex flex-col p-3.5 sm:p-4 rounded-xl border bg-card/40 hover:bg-accent/40 hover:border-primary/40 transition-all duration-200 shadow-sm">
+                                
+                                <!-- 顶部：图标、名称、版本与删除 (移动端始终显示快捷删除，桌面端悬浮显示) -->
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex items-center gap-3 overflow-hidden">
+                                        <!-- 序号 (小屏隐藏) -->
+                                        <div class="hidden sm:flex items-center justify-center w-7 shrink-0">
+                                            <span class="text-[10px] font-mono text-muted-foreground/50 tabular-nums">#{{
+                                                filteredLanguages.length - index }}</span>
+                                        </div>
+                                        <!-- 图标 -->
+                                        <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary uppercase shrink-0 border border-primary/10 shadow-sm overflow-hidden bg-background">
+                                            <template v-if="getLangIcon(lang.plugin)">
+                                                <div class="w-full h-full p-2 flex items-center justify-center">
+                                                    <img :src="getLangIcon(lang.plugin)" :alt="lang.plugin" class="w-full h-full object-contain" />
+                                                </div>
+                                            </template>
+                                            <template v-else>
+                                                <span class="text-xs">{{ lang.plugin.substring(0, 2) }}</span>
+                                            </template>
+                                        </div>
+                                        <!-- 基本信息 -->
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-bold capitalize truncate text-sm sm:text-base text-foreground">{{ lang.plugin }}</span>
+                                                <Badge v-if="lang.isGlobal" variant="secondary"
+                                                    class="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 text-[10px] h-4.5 px-1.5 font-medium shrink-0">
+                                                    默认
+                                                </Badge>
                                             </div>
-                                        </template>
-                                        <template v-else>
-                                            <span class="text-xs">{{ lang.plugin.length > 2 ?
-                                                lang.plugin.substring(0, 2) : lang.plugin }}</span>
-                                        </template>
-                                    </div>
-                                    <div class="flex flex-col min-w-0 flex-1">
-                                        <div class="flex items-center gap-2 flex-wrap">
-                                            <span class="font-bold capitalize truncate text-sm text-foreground">{{
-                                                lang.plugin }}</span>
-                                            <Badge variant="outline" class="font-mono text-[10px] h-4.5 px-1.5 bg-background/50 border-muted-foreground/20">{{ lang.version }}</Badge>
-                                            <Badge v-if="lang.isGlobal" variant="secondary"
-                                                class="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 text-[10px] h-4.5 px-1.5 font-medium">
-                                                默认
-                                            </Badge>
-                                        </div>
-                                        <div class="text-[11px] text-muted-foreground truncate opacity-70 mt-0.5 cursor-help hover:text-primary transition-colors flex items-center" @click="viewDetail(lang)">
-                                            <span class="font-mono truncate">{{ lang.source }}</span>
+                                            <div class="mt-0.5">
+                                                <Badge variant="outline" class="font-mono text-[10px] h-4.5 px-1.5 bg-muted/50 border-muted-foreground/20 leading-none">{{ lang.version }}</Badge>
+                                            </div>
                                         </div>
                                     </div>
-                                    <!-- 仅移动端显示的删除按钮 -->
-                                    <Button variant="ghost" size="icon" class="h-8 w-8 sm:hidden text-muted-foreground hover:text-destructive shrink-0" @click="confirmDelete(lang)">
-                                        <Trash2 class="h-4 w-4" />
-                                    </Button>
-                                </div>
 
-                                <!-- 操作按钮 (右侧/底部) -->
-                                <div class="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-border/10">
-                                    <div class="flex items-center gap-1.5 bg-muted/30 sm:bg-transparent p-1 sm:p-0 rounded-lg w-full sm:w-auto overflow-x-auto no-scrollbar">
-                                        <Button v-if="SUPPORTED_DEPS_LANGS.includes(lang.plugin)" variant="ghost" size="sm"
-                                            class="h-7.5 px-2.5 sm:px-2 text-xs font-semibold whitespace-nowrap bg-background/50 sm:bg-transparent hover:bg-background hover:shadow-sm flex-1 sm:flex-none"
-                                            @click="$router.push(`/dependencies?language=${lang.plugin}&version=${lang.version}`)">
-                                            依赖
-                                        </Button>
-                                        <Button variant="ghost" size="sm"
-                                            class="h-7.5 px-2.5 sm:px-2 text-xs font-semibold whitespace-nowrap bg-background/50 sm:bg-transparent hover:bg-background hover:shadow-sm flex-1 sm:flex-none"
-                                            @click="handleVerify(lang)">
-                                            验证
-                                        </Button>
-                                        <Button variant="ghost" size="sm"
-                                            :class="cn('h-7.5 px-2.5 sm:px-2 text-xs font-semibold whitespace-nowrap bg-background/50 sm:bg-transparent hover:bg-background hover:shadow-sm flex-1 sm:flex-none', lang.isGlobal ? 'text-amber-600 bg-amber-500/10 dark:bg-amber-500/20' : '')"
-                                            @click="toggleDefault(lang)">
-                                            默认
-                                        </Button>
-                                    </div>
-                                    <!-- 桌面端显示的删除按钮 -->
-                                    <Button variant="ghost" size="icon"
-                                        class="hidden sm:flex h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all opacity-0 group-hover/item:opacity-100"
+                                    <!-- 右上角删除按钮 (移动端直接显示，桌面端隐现) -->
+                                    <Button variant="ghost" size="icon" 
+                                        class="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all sm:opacity-0 group-hover/item:opacity-100" 
                                         @click="confirmDelete(lang)" title="卸载">
                                         <Trash2 class="h-4 w-4" />
                                     </Button>
                                 </div>
+
+                                <!-- 中间：完整路径 (可点击查看详情) -->
+                                <div class="mt-3 px-1">
+                                    <div class="text-[11px] text-muted-foreground cursor-help hover:text-primary transition-colors flex items-center bg-muted/30 rounded-md py-1.5 px-2 group/path" @click="viewDetail(lang)">
+                                        <TerminalIcon class="h-3 w-3 mr-1.5 shrink-0 opacity-50" />
+                                        <span class="font-mono truncate select-all">{{ lang.source }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- 底部：操作按钮网格 -->
+                                <div class="mt-4 flex items-center gap-2">
+                                    <Button variant="outline" size="sm"
+                                        :disabled="!SUPPORTED_DEPS_LANGS.includes(lang.plugin)"
+                                        class="h-8 px-0 text-[11px] font-semibold flex-1 bg-background/50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                        @click="$router.push(`/dependencies?language=${lang.plugin}&version=${lang.version}`)">
+                                        依赖管理
+                                    </Button>
+                                    <Button variant="outline" size="sm"
+                                        class="h-8 px-0 text-[11px] font-semibold flex-1 bg-background/50"
+                                        @click="handleVerify(lang)">
+                                        运行验证
+                                    </Button>
+                                    <Button variant="outline" size="sm"
+                                        :class="cn('h-8 px-0 text-[11px] font-semibold flex-1 bg-background/50', 
+                                            lang.isGlobal ? 'text-amber-600 border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10' : '')"
+                                        @click="toggleDefault(lang)">
+                                        {{ lang.isGlobal ? '取消默认' : '设为默认' }}
+                                    </Button>
+                                </div>
                             </div>
-                        </template>
+                        </div>
                     </div>
                 </div>
             </TabsContent>
