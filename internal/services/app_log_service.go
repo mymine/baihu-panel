@@ -109,7 +109,7 @@ func (s *AppLogService) Clear(category string) error {
 	if category != "" {
 		query = query.Where("category = ?", category)
 	}
-	return query.Unscoped().Delete(&models.AppLog{}).Error
+	return query.Delete(&models.AppLog{}).Error
 }
 
 func (s *AppLogService) GetRetentionConfigs() map[string]LogRetentionConfig {
@@ -146,7 +146,7 @@ func (s *AppLogService) CleanUp() {
 
 		if cfg.Days > 0 {
 			deadline := time.Now().AddDate(0, 0, -cfg.Days)
-			database.DB.Unscoped().Where("category = ? AND created_at < ?", cat, deadline).Delete(&models.AppLog{})
+			database.DB.Where("category = ? AND created_at < ?", cat, deadline).Delete(&models.AppLog{})
 		}
 
 		if cfg.MaxCount > 0 {
@@ -157,7 +157,7 @@ func (s *AppLogService) CleanUp() {
 				var ids []string
 				database.DB.Model(&models.AppLog{}).Where("category = ?", cat).Order("created_at asc").Limit(int(deleteCount)).Pluck("id", &ids)
 				if len(ids) > 0 {
-					database.DB.Unscoped().Where("id IN ?", ids).Delete(&models.AppLog{})
+					database.DB.Where("id IN ?", ids).Delete(&models.AppLog{})
 				}
 			}
 		}

@@ -2,8 +2,6 @@ package models
 
 import (
 	"github.com/engigu/baihu-panel/internal/constant"
-
-	"gorm.io/gorm"
 )
 
 // NotifyBinding 事件绑定表
@@ -16,7 +14,6 @@ type NotifyBinding struct {
 	Extra     BigText        `json:"extra"`                               // 额外配置（如是否开启日志推送等，对应 BindingExtra 结构）
 	CreatedAt LocalTime      `json:"created_at"`
 	UpdatedAt LocalTime      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 // BindingExtra 存储在 Extra 字段中的 JSON 配置

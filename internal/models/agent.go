@@ -2,8 +2,6 @@ package models
 
 import (
 	"github.com/engigu/baihu-panel/internal/constant"
-
-	"gorm.io/gorm"
 )
 
 // Agent 远程执行代理
@@ -25,7 +23,6 @@ type Agent struct {
 	Enabled     bool           `json:"enabled" gorm:"default:true"`                   // 是否启用
 	CreatedAt   LocalTime      `json:"created_at"`
 	UpdatedAt   LocalTime      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 func (Agent) TableName() string {
@@ -43,7 +40,6 @@ type AgentToken struct {
 	Enabled   bool           `json:"enabled" gorm:"default:true"`               // 是否启用
 	CreatedAt LocalTime      `json:"created_at"`
 	UpdatedAt LocalTime      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 func (AgentToken) TableName() string {

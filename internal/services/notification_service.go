@@ -131,12 +131,12 @@ func (s *NotificationService) DeleteChannel(id string) error {
 	}
 
 	// 删除渠道
-	if err := database.DB.Unscoped().Where("id = ?", id).Delete(&models.NotifyWay{}).Error; err != nil {
+	if err := database.DB.Where("id = ?", id).Delete(&models.NotifyWay{}).Error; err != nil {
 		return err
 	}
 
 	// 同时清理事件绑定中引用此渠道的配置
-	if err := database.DB.Unscoped().Where("way_id = ?", id).Delete(&models.NotifyBinding{}).Error; err != nil {
+	if err := database.DB.Where("way_id = ?", id).Delete(&models.NotifyBinding{}).Error; err != nil {
 		logger.Errorf("[Notify] 清理事件绑定失败: %v", err)
 	}
 
@@ -178,7 +178,7 @@ func (s *NotificationService) BatchSaveBindings(bindingType, dataID string, bind
 	return database.DB.Transaction(func(tx *gorm.DB) error {
 		// 如果指定了 dataID，先清理该对象的所有现有绑定
 		if dataID != "" {
-			if err := tx.Unscoped().Where("type = ? AND data_id = ?", bindingType, dataID).Delete(&models.NotifyBinding{}).Error; err != nil {
+			if err := tx.Where("type = ? AND data_id = ?", bindingType, dataID).Delete(&models.NotifyBinding{}).Error; err != nil {
 				return err
 			}
 		}
@@ -198,7 +198,7 @@ func (s *NotificationService) BatchSaveBindings(bindingType, dataID string, bind
 
 // DeleteBinding 删除事件绑定
 func (s *NotificationService) DeleteBinding(id string) error {
-	return database.DB.Unscoped().Where("id = ?", id).Delete(&models.NotifyBinding{}).Error
+	return database.DB.Where("id = ?", id).Delete(&models.NotifyBinding{}).Error
 }
 
 // GetBindingsByEvent 根据事件类型和数据ID获取绑定

@@ -43,30 +43,27 @@ type tableConfig struct {
 
 func (s *BackupService) getTableConfigs() []tableConfig {
 	return []tableConfig{
-		{"users.json", s.exportTable(&[]models.User{}, true), s.restoreTable(&[]models.User{})},
-		{"tasks.json", s.exportTable(&[]models.Task{}, true), s.restoreTable(&[]models.Task{})},
-		{"task_logs.json", s.exportTable(&[]models.TaskLog{}, false), s.restoreTable(&[]models.TaskLog{})},
-		{"envs.json", s.exportTable(&[]models.EnvironmentVariable{}, true), s.restoreTable(&[]models.EnvironmentVariable{})},
-		{"scripts.json", s.exportTable(&[]models.Script{}, true), s.restoreTable(&[]models.Script{})},
+		{"users.json", s.exportTable(&[]models.User{}), s.restoreTable(&[]models.User{})},
+		{"tasks.json", s.exportTable(&[]models.Task{}), s.restoreTable(&[]models.Task{})},
+		{"task_logs.json", s.exportTable(&[]models.TaskLog{}), s.restoreTable(&[]models.TaskLog{})},
+		{"envs.json", s.exportTable(&[]models.EnvironmentVariable{}), s.restoreTable(&[]models.EnvironmentVariable{})},
+		{"scripts.json", s.exportTable(&[]models.Script{}), s.restoreTable(&[]models.Script{})},
 		{"settings.json", s.exportSettings, s.restoreSettings},
-		{"send_stats.json", s.exportTable(&[]models.SendStats{}, false), s.restoreTable(&[]models.SendStats{})},
+		{"send_stats.json", s.exportTable(&[]models.SendStats{}), s.restoreTable(&[]models.SendStats{})},
 
-		{"agents.json", s.exportTable(&[]models.Agent{}, true), s.restoreTable(&[]models.Agent{})},
-		{"tokens.json", s.exportTable(&[]models.AgentToken{}, true), s.restoreTable(&[]models.AgentToken{})},
-		{"languages.json", s.exportTable(&[]models.Language{}, true), s.restoreTable(&[]models.Language{})},
-		{"deps.json", s.exportTable(&[]models.Dependency{}, true), s.restoreTable(&[]models.Dependency{})},
-		{"notify_ways.json", s.exportTable(&[]models.NotifyWay{}, true), s.restoreTable(&[]models.NotifyWay{})},
-		{"notify_bindings.json", s.exportTable(&[]models.NotifyBinding{}, true), s.restoreTable(&[]models.NotifyBinding{})},
-		{"app_logs.json", s.exportTable(&[]models.AppLog{}, false), s.restoreTable(&[]models.AppLog{})},
+		{"agents.json", s.exportTable(&[]models.Agent{}), s.restoreTable(&[]models.Agent{})},
+		{"tokens.json", s.exportTable(&[]models.AgentToken{}), s.restoreTable(&[]models.AgentToken{})},
+		{"languages.json", s.exportTable(&[]models.Language{}), s.restoreTable(&[]models.Language{})},
+		{"deps.json", s.exportTable(&[]models.Dependency{}), s.restoreTable(&[]models.Dependency{})},
+		{"notify_ways.json", s.exportTable(&[]models.NotifyWay{}), s.restoreTable(&[]models.NotifyWay{})},
+		{"notify_bindings.json", s.exportTable(&[]models.NotifyBinding{}), s.restoreTable(&[]models.NotifyBinding{})},
+		{"app_logs.json", s.exportTable(&[]models.AppLog{}), s.restoreTable(&[]models.AppLog{})},
 	}
 }
 
-func (s *BackupService) exportTable(modelPtr any, unscoped bool) func(io.Writer) error {
+func (s *BackupService) exportTable(modelPtr any) func(io.Writer) error {
 	return func(w io.Writer) error {
 		db := database.DB
-		if unscoped {
-			db = db.Unscoped()
-		}
 
 		if _, err := w.Write([]byte("[\n")); err != nil {
 			return err
@@ -222,21 +219,21 @@ func (s *BackupService) Restore(zipPath string) error {
 	// 开启全局事务
 	err = database.DB.Transaction(func(tx *gorm.DB) error {
 		// 1. 清空现有数据（物理删除）
-		tx.Unscoped().Where("1=1").Delete(&models.User{})
-		tx.Unscoped().Where("1=1").Delete(&models.Task{})
-		tx.Unscoped().Where("1=1").Delete(&models.TaskLog{})
-		tx.Unscoped().Where("1=1").Delete(&models.EnvironmentVariable{})
-		tx.Unscoped().Where("1=1").Delete(&models.Script{})
-		tx.Unscoped().Where("section != ?", BackupSection).Delete(&models.Setting{})
-		tx.Unscoped().Where("1=1").Delete(&models.SendStats{})
+		tx.Where("1=1").Delete(&models.User{})
+		tx.Where("1=1").Delete(&models.Task{})
+		tx.Where("1=1").Delete(&models.TaskLog{})
+		tx.Where("1=1").Delete(&models.EnvironmentVariable{})
+		tx.Where("1=1").Delete(&models.Script{})
+		tx.Where("section != ?", BackupSection).Delete(&models.Setting{})
+		tx.Where("1=1").Delete(&models.SendStats{})
 
-		tx.Unscoped().Where("1=1").Delete(&models.Agent{})
-		tx.Unscoped().Where("1=1").Delete(&models.AgentToken{})
-		tx.Unscoped().Where("1=1").Delete(&models.Language{})
-		tx.Unscoped().Where("1=1").Delete(&models.Dependency{})
-		tx.Unscoped().Where("1=1").Delete(&models.NotifyWay{})
-		tx.Unscoped().Where("1=1").Delete(&models.NotifyBinding{})
-		tx.Unscoped().Where("1=1").Delete(&models.AppLog{})
+		tx.Where("1=1").Delete(&models.Agent{})
+		tx.Where("1=1").Delete(&models.AgentToken{})
+		tx.Where("1=1").Delete(&models.Language{})
+		tx.Where("1=1").Delete(&models.Dependency{})
+		tx.Where("1=1").Delete(&models.NotifyWay{})
+		tx.Where("1=1").Delete(&models.NotifyBinding{})
+		tx.Where("1=1").Delete(&models.AppLog{})
 
 		// 2. 依次恢复每个表
 		for _, cfg := range configs {

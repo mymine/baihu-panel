@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/engigu/baihu-panel/internal/constant"
-	"gorm.io/gorm"
 )
 
 type Language struct {
@@ -14,7 +13,6 @@ type Language struct {
 	InstalledAt *LocalTime     `json:"installed_at"`
 	CreatedAt   LocalTime      `json:"created_at"`
 	UpdatedAt   LocalTime      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 func (Language) TableName() string {

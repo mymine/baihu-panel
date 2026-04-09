@@ -2,8 +2,6 @@ package models
 
 import (
 	"github.com/engigu/baihu-panel/internal/constant"
-
-	"gorm.io/gorm"
 )
 
 // NotifyWay 消息推送渠道
@@ -15,7 +13,6 @@ type NotifyWay struct {
 	Enabled   bool           `json:"enabled" gorm:"default:true;index"`
 	CreatedAt LocalTime      `json:"created_at"`
 	UpdatedAt LocalTime      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 func (NotifyWay) TableName() string {

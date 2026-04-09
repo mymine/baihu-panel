@@ -143,7 +143,7 @@ func (ts *TaskService) DeleteTask(id string) bool {
 	// 同时删除关联的通知推送设置
 	database.DB.Where("type = ? AND data_id = ?", constant.BindingTypeTask, id).Delete(&models.NotifyBinding{})
 	
-	result := database.DB.Unscoped().Where("id = ?", id).Delete(&models.Task{})
+	result := database.DB.Where("id = ?", id).Delete(&models.Task{})
 	return result.RowsAffected > 0
 }
 
@@ -151,6 +151,6 @@ func (ts *TaskService) BatchDeleteTasks(ids []string) int64 {
 	// 同时删除关联的通知推送设置
 	database.DB.Where("type = ? AND data_id IN ?", constant.BindingTypeTask, ids).Delete(&models.NotifyBinding{})
 	
-	result := database.DB.Unscoped().Where("id IN ?", ids).Delete(&models.Task{})
+	result := database.DB.Where("id IN ?", ids).Delete(&models.Task{})
 	return result.RowsAffected
 }

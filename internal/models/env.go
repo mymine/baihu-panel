@@ -2,8 +2,6 @@ package models
 
 import (
 	"github.com/engigu/baihu-panel/internal/constant"
-
-	"gorm.io/gorm"
 )
 
 // EnvironmentVariable represents an environment variable
@@ -18,7 +16,7 @@ type EnvironmentVariable struct {
 	UserID    string         `json:"user_id" gorm:"size:20;index"`
 	CreatedAt LocalTime      `json:"created_at"`
 	UpdatedAt LocalTime      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+
 }
 
 func (EnvironmentVariable) TableName() string {
@@ -33,7 +31,6 @@ type Script struct {
 	UserID    string         `json:"user_id" gorm:"size:20;index"`
 	CreatedAt LocalTime      `json:"created_at"`
 	UpdatedAt LocalTime      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 func (Script) TableName() string {

@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/engigu/baihu-panel/internal/constant"
-
-	"gorm.io/gorm"
 )
 
 // TaskLanguages 自定义语言配置列表类型，处理 JSON 序列化
@@ -98,7 +96,6 @@ type Task struct {
 	RepoTaskID    string              `json:"repo_task_id" gorm:"size:20;index"`          // 所属的仓库任务 ID
 	CreatedAt     LocalTime           `json:"created_at"`
 	UpdatedAt     LocalTime           `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt      `json:"-" gorm:"index"`
 }
 
 func (Task) TableName() string {

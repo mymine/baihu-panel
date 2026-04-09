@@ -220,7 +220,7 @@ func (s *AgentService) Delete(id string) error {
 		return &ServiceError{Message: "该 Agent 下还有关联任务，无法删除"}
 	}
 
-	return database.DB.Unscoped().Where("id = ?", id).Delete(&models.Agent{}).Error
+	return database.DB.Where("id = ?", id).Delete(&models.Agent{}).Error
 }
 
 // GetByID 根据 ID 获取 Agent

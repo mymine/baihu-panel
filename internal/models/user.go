@@ -2,8 +2,6 @@ package models
 
 import (
 	"github.com/engigu/baihu-panel/internal/constant"
-
-	"gorm.io/gorm"
 )
 
 // User represents a system user
@@ -16,7 +14,6 @@ type User struct {
 	TokenVersion int            `json:"-" gorm:"default:1"`               // 用于 JWT 失效校验
 	CreatedAt    LocalTime      `json:"created_at"`
 	UpdatedAt    LocalTime      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
 func (User) TableName() string {
