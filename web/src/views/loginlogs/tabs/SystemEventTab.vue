@@ -211,26 +211,40 @@ function onDialogClose(open: boolean) {
                     暂无系统事件
                 </div>
 
-                <!-- ========== 1. 小屏布局 (Small < 640px) - 用户调好 ========== -->
+                <!-- ========== 1. 小屏布局 (Small < 640px) - 统一风格 ========== -->
                 <div v-for="(log, index) in logs" :key="`small-${log.id}`"
                     class="sm:hidden p-3 hover:bg-muted/50 transition-colors cursor-pointer group"
                     :class="[selectedLogId === log.id && 'bg-accent/50']" @click="showDetail(log)">
-                    <div class="flex items-start justify-between mb-2">
+                    <div class="flex items-start justify-between mb-3 border-b border-border/40 pb-2">
                         <div class="flex items-center gap-2 flex-1 min-w-0 mr-2">
                             <span class="text-xs text-muted-foreground shrink-0 tabular-nums">#{{ total - (filters.page - 1) * pageSize - index }}</span>
-                            <component :is="getLevelIcon(log.level)" :class="['h-4 w-4 shrink-0',
-                                log.level === LOG_LEVEL.INFO ? 'text-blue-500' :
-                                    log.level === LOG_LEVEL.WARNING ? 'text-yellow-500' : 'text-red-500']" />
-                            <span class="font-medium text-sm truncate" :title="log.title">{{ log.title }}</span>
+                            <span class="font-bold text-sm truncate" :title="log.title">{{ log.title }}</span>
                         </div>
+                        <span :class="['h-2 w-2 mt-1.5 rounded-full shrink-0 shadow-[0_0_8px]',
+                            log.level === LOG_LEVEL.INFO ? 'bg-blue-500 shadow-blue-500/40' :
+                                log.level === LOG_LEVEL.WARNING ? 'bg-yellow-500 shadow-yellow-500/40' : 'bg-red-500 shadow-red-500/40']"></span>
                     </div>
-                    <div class="bg-muted/30 rounded px-2 py-1.5 mb-2">
-                        <div class="text-muted-foreground text-xs truncate">
-                            {{ log.content || '-' }}
+
+                    <!-- 详情信息列表 (仿 PushLog 格式) -->
+                    <div class="space-y-1.5 text-xs text-muted-foreground mb-1 px-1">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 shrink-0 font-medium opacity-70">级别:</span>
+                            <span :class="['px-1.5 py-0.5 rounded text-[10px] font-medium',
+                                log.level === LOG_LEVEL.INFO ? 'bg-blue-500/10 text-blue-500' :
+                                    log.level === LOG_LEVEL.WARNING ? 'bg-yellow-500/10 text-yellow-500' : 'bg-red-500/10 text-red-500']">
+                                {{ log.level === LOG_LEVEL.INFO ? '信息' : log.level === LOG_LEVEL.WARNING ? '警告' : '错误' }}
+                            </span>
                         </div>
-                    </div>
-                    <div class="text-[10px] text-muted-foreground text-right tabular-nums">
-                        {{ formatDate(log.created_at) }}
+                        <div class="flex items-start gap-3">
+                            <span class="w-8 shrink-0 font-medium mt-0.5 opacity-70">内容:</span>
+                            <div class="flex-1 min-w-0 text-foreground break-all leading-relaxed line-clamp-2">
+                                {{ log.content || '-' }}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 shrink-0 font-medium opacity-70">时间:</span>
+                            <span class="text-[10px] text-muted-foreground">{{ formatDate(log.created_at) }}</span>
+                        </div>
                     </div>
                 </div>
 

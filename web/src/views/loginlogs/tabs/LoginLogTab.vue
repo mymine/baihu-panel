@@ -140,29 +140,33 @@ onMounted(loadLogs)
                     暂无登录日志
                 </div>
 
-                <!-- ========== 1. 小屏布局 (Small < 640px) - 用户调好 ========== -->
+                <!-- ========== 1. 小屏布局 (Small < 640px) - 统一风格 ========== -->
                 <div v-for="(log, index) in logs" :key="`small-${log.id}`"
-                    class="sm:hidden p-3 hover:bg-muted/50 transition-colors">
+                    class="sm:hidden p-3 hover:bg-muted/50 transition-colors cursor-pointer group" @click="showIpInfo(log.ip)">
                     <div class="flex items-start justify-between mb-3 border-b border-border/40 pb-2">
                         <div class="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                            <span class="text-xs text-muted-foreground shrink-0">#{{ total - (currentPage - 1) * pageSize - index }}</span>
+                            <span class="text-xs text-muted-foreground shrink-0 tabular-nums">#{{ total - (currentPage - 1) * pageSize - index }}</span>
                             <span class="font-bold text-sm truncate">{{ log.username }}</span>
                         </div>
-                        <span
-                            :class="['h-2 w-2 mt-1.5 rounded-full shrink-0', log.status === 'success' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]']"></span>
+                        <span :class="['h-2 w-2 mt-1.5 rounded-full shrink-0 shadow-[0_0_8px]',
+                            log.status === 'success' ? 'bg-green-500 shadow-green-500/40' : 'bg-red-500 shadow-red-500/40']"></span>
                     </div>
 
-                    <!-- 详情信息列表 -->
+                    <!-- 详情信息列表 (仿 PushLog 格式) -->
                     <div class="space-y-1.5 text-xs text-muted-foreground mb-1 px-1">
                         <div class="flex items-center gap-3">
                             <span class="w-8 shrink-0 font-medium opacity-70">IP:</span>
-                            <span
-                                class="text-foreground bg-muted/40 px-1.5 py-0.5 rounded cursor-pointer hover:bg-muted/80 transition-colors"
-                                @click="showIpInfo(log.ip)">{{ log.ip }}</span>
+                            <span class="text-foreground bg-muted/40 px-1.5 py-0.5 rounded text-[10px] tabular-nums">{{ log.ip }}</span>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <span class="w-8 shrink-0 font-medium mt-0.5 opacity-70">信息:</span>
+                            <div class="flex-1 min-w-0 text-foreground break-all leading-relaxed line-clamp-2">
+                                {{ log.message || '-' }}
+                            </div>
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="w-8 shrink-0 font-medium opacity-70">时间:</span>
-                            <span class="text-muted-foreground">{{ log.created_at }}</span>
+                            <span class="text-[10px] text-muted-foreground">{{ log.created_at }}</span>
                         </div>
                     </div>
                 </div>
