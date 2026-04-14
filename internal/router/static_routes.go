@@ -2,12 +2,16 @@ package router
 
 import (
 	"compress/gzip"
+	"encoding/json"
 	"io"
+	"io/fs"
 	"mime"
 	"net/http"
 	"path/filepath"
 	"strings"
 
+	"github.com/engigu/baihu-panel/internal/constant"
+	"github.com/engigu/baihu-panel/internal/services"
 	"github.com/engigu/baihu-panel/internal/static"
 
 	"github.com/gin-gonic/gin"
@@ -91,12 +95,11 @@ func initStaticRoutes(root *gin.RouterGroup) {
 func initPWARoutes(root *gin.RouterGroup) {
 	// PWA 相关文件处理
 	pwaRootFiles := map[string]string{
-		"/sw.js":                "application/javascript",
-		"/registerSW.js":        "application/javascript",
-		"/manifest.webmanifest": "application/manifest+json",
-		"/favicon.ico":          "image/x-icon",
-		"/pwa-icon-192.png":     "image/png",
-		"/pwa-icon-512.png":     "image/png",
+		"/sw.js":            "application/javascript",
+		"/registerSW.js":    "application/javascript",
+		"/favicon.ico":      "image/x-icon",
+		"/pwa-icon-192.png": "image/png",
+		"/pwa-icon-512.png": "image/png",
 	}
 
 	for path, contentType := range pwaRootFiles {
@@ -108,11 +111,48 @@ func initPWARoutes(root *gin.RouterGroup) {
 		})
 	}
 
+	// 动态 manifest 处理 (支持由 Go 后端控制标题)
+	root.GET("/manifest.webmanifest", handleManifest)
+
 	// 动态匹配 workbox-*.js (Vite PWA 生成的库文件)
 	root.GET("/workbox-:hash.js", func(ctx *gin.Context) {
 		file := "workbox-" + ctx.Param("hash") + ".js"
 		serveSingleFile(ctx, file, "application/javascript", "public, max-age=31536000, immutable")
 	})
+}
+
+func handleManifest(ctx *gin.Context) {
+	staticFS := static.GetFS()
+	if staticFS == nil {
+		ctx.Status(404)
+		return
+	}
+
+	// 读取原始 manifest
+	data, err := fs.ReadFile(staticFS, "manifest.webmanifest")
+	if err != nil {
+		ctx.Status(404)
+		return
+	}
+
+	var manifest map[string]interface{}
+	if err := json.Unmarshal(data, &manifest); err != nil {
+		// 如果解析失败，回退到原始文件
+		ctx.Data(200, "application/manifest+json", data)
+		return
+	}
+
+	// 注入后端配置的标题
+	settings := services.NewSettingsService()
+	title := settings.Get(constant.SectionSite, constant.KeyTitle)
+	if title != "" {
+		manifest["name"] = title
+		manifest["short_name"] = title
+	}
+
+	res, _ := json.Marshal(manifest)
+	ctx.Header("Cache-Control", "public, no-cache")
+	ctx.Data(200, "application/manifest+json", res)
 }
 
 func serveSingleFile(ctx *gin.Context, filename string, contentType string, cache string) {
