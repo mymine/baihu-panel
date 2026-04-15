@@ -65,8 +65,8 @@ const sizeClasses = {
               {{ title }}
             </DialogTitle>
           </div>
-          <DialogDescription v-if="description" class="text-xs text-muted-foreground/60 leading-relaxed truncate">
-            {{ description }}
+          <DialogDescription v-if="description || $slots.description" class="text-xs text-muted-foreground/60 leading-relaxed truncate">
+            <slot name="description">{{ description }}</slot>
           </DialogDescription>
           <DialogDescription v-else class="sr-only">
             {{ title || '提示对话框' }}
@@ -83,7 +83,7 @@ const sizeClasses = {
       </div>
 
       <!-- 内容区域 (保持整洁简洁) -->
-      <div class="p-6">
+      <div class="p-4 sm:p-6">
         <div class="animate-in fade-in slide-in-from-bottom-1 duration-400">
           <slot />
         </div>

@@ -221,7 +221,7 @@ onMounted(loadLogs)
                 <Loader2 class="h-8 w-8 animate-spin text-primary/40" />
             </div>
             <div v-else-if="ipGeoInfo" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div class="p-3 rounded-xl bg-muted/20 border border-border/10 space-y-1">
                         <p class="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">国家/地区</p>
                         <p class="text-sm font-medium">{{ ipGeoInfo.country }} ({{ ipGeoInfo.country_code }})</p>
@@ -233,21 +233,21 @@ onMounted(loadLogs)
                 </div>
 
                 <div class="p-4 rounded-xl bg-muted/20 border border-border/10 space-y-3">
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-muted-foreground">运营商</span>
-                        <span class="font-medium truncate ml-4">{{ ipGeoInfo.isp || '-' }}</span>
+                    <div class="flex justify-between items-center text-sm gap-2">
+                        <span class="text-muted-foreground shrink-0">运营商</span>
+                        <span class="font-medium truncate text-right">{{ ipGeoInfo.isp || '-' }}</span>
                     </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-muted-foreground">组织</span>
-                        <span class="font-medium truncate ml-4">{{ ipGeoInfo.organization || '-' }}</span>
+                    <div class="flex justify-between items-center text-sm gap-2">
+                        <span class="text-muted-foreground shrink-0">组织</span>
+                        <span class="font-medium truncate text-right">{{ ipGeoInfo.organization || '-' }}</span>
                     </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-muted-foreground">ASN</span>
-                        <span class="font-medium truncate ml-4">{{ ipGeoInfo.asn }} - {{ ipGeoInfo.asn_organization || '-' }}</span>
+                    <div class="flex justify-between items-center text-sm gap-2">
+                        <span class="text-muted-foreground shrink-0">ASN</span>
+                        <span class="font-medium truncate text-right">{{ ipGeoInfo.asn }} - {{ ipGeoInfo.asn_organization || '-' }}</span>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/10 text-xs">
+                <div class="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/10 text-[11px] sm:text-xs">
                     <span class="text-muted-foreground font-medium">地理坐标</span>
                     <span class="font-mono text-primary/70">{{ ipGeoInfo.latitude }}, {{ ipGeoInfo.longitude }}</span>
                 </div>
