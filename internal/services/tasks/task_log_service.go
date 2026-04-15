@@ -139,7 +139,7 @@ func (s *TaskLogService) CleanTaskLogs(taskID string) {
 	}
 
 	if deleted > 0 {
-		logger.Infof("[TaskLog] 清理任务 #%s 的 %d 条日志", taskID, deleted)
+		logger.Infof("[TaskLog] 清理旧日志: #%s 共 %d 条", taskID, deleted)
 	}
 }
 

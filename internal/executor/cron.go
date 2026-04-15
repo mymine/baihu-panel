@@ -128,12 +128,12 @@ func (m *CronManager) AddTask(task CronTask) error {
 			// 生成 0 到 randomRange 之间的随机秒数
 			delaySeconds := rand.Intn(randomRange)
 			delay := time.Duration(delaySeconds) * time.Second
-			m.logger.Infof("[CronManager] 任务 #%s 将随机延迟 %v (范围: %ds) 后入队执行", taskID, delay, randomRange)
+			m.logger.Infof("[CronManager] 任务 %s (#%s) 将随机延迟 %v (范围: %ds) 后入队", name, taskID, delay, randomRange)
 
 			// 使用调度器的延时投递功能，不阻塞当前 Cron 协程
 			m.scheduler.EnqueueDelayed(delay, reqBuilder)
 		} else {
-			m.logger.Infof("[CronManager] 触发计划任务 #%s (%s)", taskID, name)
+			m.logger.Infof("[CronManager] 触发计划任务: %s (#%s)", name, taskID)
 			if m.scheduler != nil {
 				m.scheduler.EnqueueOrExecute(reqBuilder())
 			}
@@ -149,7 +149,7 @@ func (m *CronManager) AddTask(task CronTask) error {
 	}
 
 	m.entryMap[taskID] = entryID
-	m.logger.Infof("[CronManager] 任务已添加调度 #%s %s (%s)", taskID, name, task.GetSchedule())
+	m.logger.Infof("[CronManager] 已添加调度: %s (#%s) [%s]", name, taskID, task.GetSchedule())
 
 	// 初始触发一次下次运行时间通知
 	go func() {

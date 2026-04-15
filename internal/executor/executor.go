@@ -175,7 +175,7 @@ func ExecuteWithHooks(ctx context.Context, req Request, stdout, stderr io.Writer
 		)
 		f, ptyErr := pty.Start(cmd)
 		if ptyErr == nil {
-			logger.Infof("[Executor] 任务 #%s 启动于 PTY 模式", logID)
+			logger.Infof("[Executor] #%s 启动于 PTY 模式", logID)
 			ptyFile = f
 			started = true
 			copyDone = make(chan struct{})
@@ -196,7 +196,7 @@ func ExecuteWithHooks(ctx context.Context, req Request, stdout, stderr io.Writer
 		if stdout != stderr && stdout != io.Discard {
 			logger.Debugf("[Executor] 任务 #%d stdout (%p) 和 stderr (%p) 不同，回退到 Pipe 模式。", logID, stdout, stderr)
 		}
-		logger.Infof("[Executor] 任务 #%s 启动于 Pipe 模式", logID)
+		logger.Infof("[Executor] #%s 启动于 Pipe 模式", logID)
 		if stdout != nil && stdout == stderr {
 			pr, pw, err := os.Pipe()
 			if err == nil {

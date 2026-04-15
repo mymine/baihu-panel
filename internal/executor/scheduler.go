@@ -334,7 +334,7 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 	}()
 	start := time.Now()
 
-	s.logger.Infof("[Scheduler] 执行任务 %s (名称: %s, 类型: %s)", req.TaskID, req.Name, req.Type)
+	s.logger.Infof("[Scheduler] 开始执行: %s (#%s) [%s]", req.Name, req.TaskID, req.Type)
 
 	// 演示模式拦截
 	if constant.DemoMode {
@@ -372,7 +372,7 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 		req.Command = utils.BuildMiseCommand(req.Command, req.Languages)
 		req.UseMise = false
 	}
-	s.logger.Infof("[Scheduler] 实际执行命令: %s", req.Command)
+	s.logger.Infof("[Scheduler] 命令: %s", req.Command)
 
 	if s.config.Verbose {
 		workDir := req.WorkDir
@@ -511,8 +511,8 @@ func (s *Scheduler) executeTask(req *ExecutionRequest) (*ExecutionResult, error)
 	if execErr != nil {
 		s.logger.Errorf("[Scheduler] 任务 %s 执行失败: %v", req.TaskID, execErr)
 	} else {
-		s.logger.Infof("[Scheduler] 任务 %s 执行完成 (状态: %s, 耗时: %dms)",
-			req.TaskID, result.Status, result.Duration)
+		s.logger.Infof("[Scheduler] 执行完成: %s (#%s) [%s] (状态: %s, 耗时: %dms)",
+			req.Name, req.TaskID, req.Type, result.Status, result.Duration)
 	}
 
 	return result, execErr
