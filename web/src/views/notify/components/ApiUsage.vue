@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Copy, Terminal, Key, FileJson, RefreshCw, Check, Hash, Info, AlertTriangle, Code2 } from 'lucide-vue-next'
+import { Copy, Terminal, Key, RefreshCw, Check, Hash, Info, AlertTriangle, Code2 } from 'lucide-vue-next'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -59,15 +59,7 @@ function copyToClipboard(text: string, blockId: string) {
   })
 }
 
-const apiExample = `POST /api/v1/notify/send
-Content-Type: application/json
-notify-token: <你的API Token>
 
-{
-  "channel_id": "渠道ID",
-  "title": "标题",
-  "text": "内容"
-}`
 
 const activeLang = ref('shell')
 const testTitle = ref('系统通知')
@@ -430,7 +422,7 @@ const currentExample = computed(() => {
                   核心机制
                 </div>
                 <p class="text-[10px] text-zinc-500 leading-normal">
-                  系统在执行脚本时会默认注入 <code class="text-zinc-700 dark:text-zinc-300">BHPKG_NOTIFY_TOKEN</code> & <code class="text-zinc-700 dark:text-zinc-300">BHPKG_NOTIFY_CHANNEL</code>。库会自动读取这些值，实现真正的免配置调用。
+                  系统在执行脚本时会默认注入 <code class="text-zinc-700 dark:text-zinc-300">BHPKG_NOTIFY_TOKEN</code> & <code class="text-zinc-700 dark:text-zinc-300">BHPKG_NOTIFY_CHANNEL</code>。<strong>请确保您已在任务设置的“环境变量”或“机密”中配置了这两个同名 Key（系统会自动通过脚本环境生效）。</strong> 库会自动读取这些值，实现真正的免配置调用。
                 </p>
               </div>
             </div>
