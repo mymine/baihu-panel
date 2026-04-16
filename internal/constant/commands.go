@@ -24,4 +24,8 @@ var Commands = []CommandInfo{
 		Name:        "restore",
 		Description: "从本地 zip 文件中全量恢复系统级备份数据",
 	},
+	{
+		Name:        "builtininstall",
+		Description: "为所有 mise 管理的 Node.js 和 Python 环境安装内建助手库",
+	},
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/engigu/baihu-panel/cmd/builtininstall"
 	"github.com/engigu/baihu-panel/cmd/reposync"
 	"github.com/engigu/baihu-panel/cmd/resetpwd"
 	"github.com/engigu/baihu-panel/cmd/restore"
@@ -12,8 +13,9 @@ type CommandHandler func(args []string)
 
 // Handlers 维护了除了 server 之外的命令的执行入口
 var Handlers = map[string]CommandHandler{
-	"reposync": reposync.Run,
-	"resetpwd": resetpwd.Run,
-	"restore":  restore.Run,
+	"reposync":       reposync.Run,
+	"resetpwd":       resetpwd.Run,
+	"restore":        restore.Run,
+	"builtininstall": builtininstall.Run,
 	// "migrate":  migrate.Run,
 }

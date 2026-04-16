@@ -117,3 +117,31 @@ func BuildMiseCommandArgsSimple(cmdArgs []string, language, version string) []st
 	}
 	return append([]string{"mise", "exec", spec, "--"}, cmdArgs...)
 }
+
+// ListMiseInstalledVersions 获取指定语言已安装的所有版本列表
+func ListMiseInstalledVersions(language string) ([]string, error) {
+	// 执行 mise ls <language> 命令
+	cmd := exec.Command("mise", "ls", language)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+
+	var versions []string
+	lines := strings.Split(string(out), "\n")
+	for _, line := range lines {
+		v := strings.TrimSpace(line)
+		if v == "" {
+			continue
+		}
+		// mise ls 的输出类似:
+		// 3.12.1
+		// 3.11.5
+		// 我们取第一个字段即可
+		fields := strings.Fields(v)
+		if len(fields) > 0 {
+			versions = append(versions, fields[0])
+		}
+	}
+	return versions, nil
+}
