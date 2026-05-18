@@ -1,29 +1,76 @@
 package constant
 
-import "time"
+import (
+	"os"
+	"path/filepath"
+	"time"
+)
 
-const (
-
+var (
 	// ConfigPath 配置文件路径
-	ConfigPath = "configs/config.ini"
+	ConfigPath string
 
 	// DataDir 数据目录
-	DataDir = "./data"
+	DataDir string
 
 	// DefaultDBPath 默认数据库路径
-	DefaultDBPath = "./data/baihu.db"
+	DefaultDBPath string
 
 	// WebDistDir 前端构建目录
-	WebDistDir = "./web/dist"
+	WebDistDir string
+
+	// ScriptsWorkDir 脚本工作目录
+	ScriptsWorkDir string
+)
+
+func init() {
+	rootDir := ResolveAppRootDir()
+	ConfigPath = filepath.Clean(filepath.Join(rootDir, "configs", "config.ini"))
+	DataDir = filepath.Clean(filepath.Join(rootDir, "data"))
+	DefaultDBPath = filepath.Clean(filepath.Join(rootDir, "data", "baihu.db"))
+	WebDistDir = filepath.Clean(filepath.Join(rootDir, "web", "dist"))
+	ScriptsWorkDir = filepath.Clean(filepath.Join(rootDir, "data", "scripts"))
+}
+
+// ResolveAppRootDir 获取应用程序的绝对根目录路径。
+func ResolveAppRootDir() string {
+	// 1. 检查 BH_CONFIG_PATH 环境变量
+	if configPath := os.Getenv("BH_CONFIG_PATH"); configPath != "" {
+		if absConfigPath, err := filepath.Abs(configPath); err == nil {
+			return filepath.Dir(filepath.Dir(absConfigPath))
+		}
+	}
+	// 2. 检查当前可执行文件路径
+	if exe, err := os.Executable(); err == nil {
+		dir := filepath.Dir(exe)
+		for {
+			if _, err := os.Stat(filepath.Join(dir, "configs", "config.ini")); err == nil {
+				return dir
+			}
+			if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+				return dir
+			}
+			parent := filepath.Dir(dir)
+			if parent == dir {
+				break
+			}
+			dir = parent
+		}
+	}
+	// 3. 回退到当前工作目录
+	if cwd, err := os.Getwd(); err == nil {
+		return cwd
+	}
+	return "."
+}
+
+const (
 
 	// DefaultRole 默认用户角色
 	DefaultRole = "user"
 
 	// AdminRole 管理员角色
 	AdminRole = "admin"
-
-	// ScriptsWorkDir 脚本工作目录
-	ScriptsWorkDir = "./data/scripts"
 
 	// CookieName Cookie 名称
 	CookieName = "BHToken"
