@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -30,6 +31,16 @@ func CheckWSOrigin(r *http.Request) bool {
 
 	// 1. 同源校验：Origin 的 Host 与请求头中的 Host 一致
 	if strings.EqualFold(u.Host, r.Host) {
+		return true
+	}
+
+	// 容错处理：如果因为 Nginx 配置了 $host 而丢掉了端口，导致一方带端口一方不带端口时，尝试忽略端口进行域名比对
+	uHostOnly := u.Hostname()
+	rHostOnly := r.Host
+	if h, _, err := net.SplitHostPort(r.Host); err == nil {
+		rHostOnly = h
+	}
+	if strings.EqualFold(uHostOnly, rHostOnly) {
 		return true
 	}
 
