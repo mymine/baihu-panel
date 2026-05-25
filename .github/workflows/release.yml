@@ -258,6 +258,8 @@ jobs:
         with:
           images: |
             ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=false
           tags: |
             type=semver,pattern={{version}}${{ matrix.tag_suffix }}
             type=raw,value=latest${{ matrix.tag_suffix }}
